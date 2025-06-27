@@ -1,0 +1,6 @@
+[files]
+extend-exclude = [
+    # "target/", # not a code
+    "sys/vendor", # not my code
+]
+ignore-hidden = true
