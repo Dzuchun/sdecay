@@ -6,6 +6,7 @@
 #![cfg_attr(not(test), no_std)]
 
 // -- FOLLOWING MODULES DO CONTAIN UNSAFE CODE --
+pub mod wrapper;
 
 pub mod container;
 
@@ -16,3 +17,9 @@ extern crate alloc;
 
 #[cfg(feature = "std")]
 extern crate std;
+
+pub use paste::paste;
+
+#[forbid(unsafe_code)]
+mod macros;
+use macros::{generic_list, impl_moveable};

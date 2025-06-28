@@ -7,6 +7,7 @@ edition = "2024"
 sdecay-sys = { path = "../sys" }
 # these are proc macros
 nolt = { path = "nolt" }
+paste = "1.0.15"
 
 [features]
 # default = []
