@@ -10,6 +10,9 @@ pub use stdstring::StdString;
 mod exception;
 pub use exception::CppException;
 
+mod enums;
+pub use enums::*;
+
 pub(crate) trait Wrapper {
     type CSide;
 }
