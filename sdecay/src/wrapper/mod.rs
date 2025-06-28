@@ -2,6 +2,10 @@
 //!
 //! Unsafe: **YES**
 
+use core::ffi::c_double;
+
+use crate::wrapper;
+
 pub(crate) type BindgenString = sdecay_sys::sdecay::string;
 
 mod stdstring;
@@ -45,3 +49,51 @@ impl_wrapper_shared!(bool);
 impl_wrapper_shared!(usize);
 impl_wrapper_shared!(f32);
 impl_wrapper_shared!(f64);
+
+wrapper! {
+    /// Used to express the relative (to the number of decays) intensities of a specific-energy decay particles, e.g., specify what fraction of decay event will have a gamma of a certain energy
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::EnergyIntensityPair => EnergyIntensityPair {
+        #[expect(missing_docs)]
+        pub energy -> energy: c_double => f64,
+        #[expect(missing_docs)]
+        pub intensity -> intensity: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// Used to return the energy and number of particles that are expected for a given time interval
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::EnergyCountPair => EnergyCountPair {
+        #[expect(missing_docs)]
+        pub energy -> energy: c_double => f64,
+        #[expect(missing_docs)]
+        pub count -> count: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// Used to return the rate of a specific-energy decay particle, e.g., give the rate for a certain energy gamma
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::EnergyRatePair => EnergyRatePair {
+        #[expect(missing_docs)]
+        pub energy -> energy: c_double => f64,
+        #[expect(missing_docs)]
+        pub numPerSecond -> num_per_second: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// TODO: check if my understanding is actually correct
+    /// A term in decay formula of the form
+    /// $$
+    /// \text{term_coeff} \cdot \exp( - \text{exponential_coeff} \cdot t )
+    /// $$
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::TimeEvolutionTerm => TimeEvolutionTerm {
+        #[expect(missing_docs)]
+        pub termCoeff -> term_coeff: c_double => f64,
+        #[expect(missing_docs)]
+        pub exponentialCoeff -> exponential_coeff: c_double => f64,
+    }
+}
