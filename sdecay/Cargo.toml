@@ -8,5 +8,11 @@ sdecay-sys = { path = "../sys" }
 # these are proc macros
 nolt = { path = "nolt" }
 
+[features]
+# default = []
+default = ["std"]
+std = ["alloc"]
+alloc = []
+
 [lints]
 workspace = true
