@@ -7,6 +7,9 @@ pub(crate) type BindgenString = sdecay_sys::sdecay::string;
 mod stdstring;
 pub use stdstring::StdString;
 
+mod exception;
+pub use exception::CppException;
+
 pub(crate) trait Wrapper {
     type CSide;
 }

@@ -8,6 +8,7 @@ denylist = [ "git" ] # don't try enabling git feature
 
 [dependencies]
 sdecay-sys = { path = "../sys" }
+thiserror = { version = "2.0.12", default-features = false }
 # these are proc macros
 nolt = { path = "nolt" }
 paste = "1.0.15"
