@@ -10,3 +10,6 @@ mod ffi {
     )]
     include!("bindings.rs");
 }
+
+#[doc = include_str!("BUILDING.md")]
+pub mod building {}
