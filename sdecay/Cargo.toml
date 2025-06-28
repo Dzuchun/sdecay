@@ -1,0 +1,9 @@
+[package]
+name = "sdecay"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sdecay-sys = { path = "../sys" }
+[lints]
+workspace = true
