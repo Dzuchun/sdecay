@@ -29,3 +29,6 @@ pub mod sdecay {
     pub use crate::ffi::root::sdecay::*;
     pub use crate::ffi::root::std::string;
 }
+
+#[cfg(test)]
+mod tests;
