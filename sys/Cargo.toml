@@ -6,3 +6,10 @@ links = "SandiaDecay"
 
 [lib]
 path = "lib.rs"
+
+[build-dependencies]
+cc = "1.2.27"
+
+[features]
+default = []
+git = []
