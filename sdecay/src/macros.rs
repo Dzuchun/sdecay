@@ -39,23 +39,11 @@ macro_rules! generic_list {
                 $(#[$($attr)+])*
                 #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use [`Arc`](std::sync::Arc)-based container")]
                 #[doc = "\n\nNOTE: if `std` feature is not enabled, this method uses [`Rc`](alloc::rc::Rc)-based container instead!"]
-                #[cfg(feature = "std")]
+                #[cfg(feature = "alloc")]
                 #[inline]
                 pub fn [<$name _shared>]$(<$l>)?(
                     $($arg: $atype,)*
                 ) -> crate::container::ArcContainer<$rtype $(<$l>)?> {
-                    Self::[<$name _in>]((), $($arg,)*)
-                }
-
-                $(#[$($attr)+])*
-                #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use [`Rc`](alloc::rc::Rc)-based container")]
-                #[doc = "\n\nWARNING: `std` feature is not enabled, note the container type!"]
-                #[cfg(all(feature = "alloc", not(feature = "std")))]
-                #[inline]
-                pub fn [<$name _shared>]$(<$l>)?(
-                    & $($l)? self,
-                    $($arg: $atype,)*
-                ) -> crate::container::RcContainer<$rtype $(<$l>)?> {
                     Self::[<$name _in>]((), $($arg,)*)
                 }
 

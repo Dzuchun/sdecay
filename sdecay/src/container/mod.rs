@@ -5,10 +5,8 @@
 //! Unsafe: **YES**
 
 #[cfg(feature = "alloc")]
-use alloc::{boxed::Box, rc::Rc};
+use alloc::boxed::Box;
 use core::{mem::MaybeUninit, ops::Deref, pin::Pin};
-#[cfg(feature = "std")]
-use std::sync::Arc;
 
 /// Defines move constructor for the type
 ///
@@ -282,7 +280,7 @@ pub unsafe trait Container:
     /// ```
     ///
     /// Considering examples above, please take care, while implementing this function.
-    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Result<O, Self>;
+    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Option<O>;
 
     /// Provided helper function creating and initializing the container in a single call
     ///
@@ -321,8 +319,7 @@ pub unsafe trait Container:
     /// Tries moving value out of the container into a different container
     ///
     /// ### Returns
-    /// - [`Result::Ok`] variant indicates successful move into a new container
-    /// - [`Result::Err`] variant indicates fail to move due to non-exclusive access
+    /// - `None` indicates fail to move due to non-exclusive access
     ///
     /// ### Bound
     /// This method has a "[`Container::Inner`]: [`Moveable`]" bound to respect possible move constructors.
@@ -331,7 +328,7 @@ pub unsafe trait Container:
     /// Moving from [`BoxContainer`] into [`ArcContainer`]:
     ///
     /// ```rust
-    /// # #[cfg(feature = "std")] {
+    /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::container::{BoxContainer, ArcContainer, Container};
     /// let box_container = unsafe { BoxContainer::init_ptr((), |ptr| unsafe { core::ptr::write(ptr, 42) }) };
     /// let arc_container = box_container.try_mv::<ArcContainer<_>>(()).expect("Should always be able to move from Box");
@@ -340,7 +337,7 @@ pub unsafe trait Container:
     ///
     /// In fact, when moving from box (or any other exclusive container), `expect`ing can be avoided by using [`ExclusiveContainer::mv`]:
     /// ```rust
-    /// # #[cfg(feature = "std")] {
+    /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::container::{Container, ExclusiveContainer, BoxContainer, ArcContainer};
     /// # let box_container = unsafe { BoxContainer::init_ptr((), |ptr| unsafe { core::ptr::write(ptr, 42) }) };
     /// let arc_container = box_container.mv::<ArcContainer<_>>(());
@@ -349,19 +346,19 @@ pub unsafe trait Container:
     ///
     /// Note that reversed operation can fail:
     /// ```rust
-    /// # #[cfg(feature = "std")] {
+    /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::container::{Container, BoxContainer, ArcContainer};
     /// let arc_container = unsafe { ArcContainer::init_ptr((), |ptr| unsafe { core::ptr::write(ptr, 42) }) };
     /// let box_container = arc_container.try_mv::<BoxContainer<_>>(()).expect("Should move from exclusive arc container");
     /// // but,
     /// let arc_container = unsafe { ArcContainer::init_ptr((), |ptr| unsafe { core::ptr::write(ptr, 42) }) };
     /// let arc_container2 = arc_container.clone();
-    /// let box_container = arc_container.try_mv::<BoxContainer<_>>(()).expect_err("Should not move from shared arc container");
+    /// assert!(arc_container.try_mv::<BoxContainer<_>>(()).is_none());
     /// # core::mem::drop(arc_container2);
     /// # }
     /// ```
     #[inline]
-    fn try_mv<C: Container<Inner = Self::Inner>>(self, allocator: C::Allocator) -> Result<C, Self>
+    fn try_mv<C: Container<Inner = Self::Inner>>(self, allocator: C::Allocator) -> Option<C>
     where
         Self::Inner: Moveable,
     {
@@ -421,7 +418,7 @@ pub trait ExclusiveContainer: Container {
     /// Moving from [`BoxContainer`] into [`ArcContainer`]:
     ///
     /// ```rust
-    /// # #[cfg(feature = "std")] {
+    /// # #[cfg(feature = "alloc")] {
     /// # use core::pin::Pin;
     /// # use sdecay::container::{ArcContainer, BoxContainer, Container, ExclusiveContainer};
     /// let box_container = unsafe { BoxContainer::init_ptr((), |ptr| unsafe { core::ptr::write(ptr, 42) }) };
@@ -431,14 +428,14 @@ pub trait ExclusiveContainer: Container {
     ///
     /// Note that reverse operation is not implemented, since [`ArcContainer`] is not an [`ExclusiveContainer`]:
     /// ```rust,compile_fail
-    /// # #[cfg(feature = "std")] {
+    /// # #[cfg(feature = "alloc")] {
     /// # use core::pin::Pin;
-    /// # use sdecay::container::{ArcContainer, BoxContainer};
+    /// # use sdecay::container::{ArcContainer, BoxContainer, Container, ExclusiveContainer};
     /// let arc_container = unsafe { ArcContainer::init_ptr((), |ptr| unsafe { core::ptr::write(ptr, 42) }) };
     /// let box_container = arc_container.mv::<BoxContainer<_>>(());
     /// # }
-    /// # #[cfg(not(feature = "std"))] {
-    /// # compile_fail!("Dummy compile fail, if `no_std`");
+    /// # #[cfg(not(feature = "alloc"))] {
+    /// # compile_fail!("Dummy compile fail, if no `alloc`");
     /// # }
     /// ```
     fn mv<C: Container<Inner = Self::Inner>>(self, allocator: C::Allocator) -> C
@@ -573,8 +570,8 @@ unsafe impl<T> Container for BoxContainer<T> {
     }
 
     #[inline]
-    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Result<O, Self> {
-        Ok(self.move_out(action))
+    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Option<O> {
+        Some(self.move_out(action))
     }
 }
 
@@ -617,137 +614,22 @@ unsafe fn pin_inner_mut<Ptr>(pin: &mut Pin<Ptr>) -> &mut Ptr {
     unsafe { &mut *ptr }
 }
 
-#[derive(Debug)]
+#[cfg(feature = "alloc")]
+mod simple_arc;
+#[cfg(feature = "alloc")]
+use simple_arc::Arc;
+
 #[doc(hidden)]
 #[cfg(feature = "alloc")]
-pub struct UninitRcContainer<T>(Rc<MaybeUninit<T>>);
-
-/// [`Container`] implementation via [`Rc`]
-///
-/// ### Example
-/// ```rust
-/// # use core::pin::Pin;
-/// # use sdecay::container::{RcContainer, Container};
-/// let mut container = RcContainer::init_value((), 42);
-///
-/// let shared: &i32 = &container;
-/// let exclusive: Pin<&mut i32> = container.try_inner().expect("Single Rc should have exclusive access");
-/// let mut container2 = container.try_mv::<RcContainer<_>>(()).expect("Single Rc should be always successfully moved out of");
-///
-/// let container3 = container2.clone(); // container is not longer exclusive
-///
-/// assert!(container2.try_inner().is_none(), "Non-excluive Rc should not be able to get &mut");
-/// let shared: &i32 = &container2; // shared reference is still ok
-/// let _ = container2.try_mv::<RcContainer<_>>(()).expect_err("Non-exclusive Rc should not be able to move the value");
-/// ```
-#[derive(Debug)]
-#[cfg(feature = "alloc")]
-pub struct RcContainer<T>(Pin<Rc<T>>);
-
-#[cfg(feature = "alloc")]
-impl<T> Clone for RcContainer<T> {
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T> Deref for RcContainer<T> {
-    type Target = T;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T: core::fmt::Display> core::fmt::Display for RcContainer<T> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        T::fmt(&self.0, f)
-    }
-}
-
-#[cfg(feature = "alloc")]
-// SAFETY:
-// - `UninitRcContainer` does not introduce shared ownership (it does contain `Rc`, but it's SO capability is encapsulated)
-// - Moving `RcContainer` does not move `T`
-// - Dropping all `RcContainer`s referring to the same `T`, drops the `T`
-unsafe impl<T> Container for RcContainer<T> {
-    type Allocator = ();
-    type Inner = T;
-    type Uninit = UninitRcContainer<T>;
-
-    #[inline]
-    fn uninit(_allocator: ()) -> Self::Uninit {
-        UninitRcContainer(Rc::new_uninit())
-    }
-
-    #[inline]
-    fn uninit_inner_ptr(uninit: &mut Self::Uninit) -> *mut Self::Inner {
-        Rc::get_mut(&mut uninit.0).unwrap().as_mut_ptr()
-    }
-
-    #[inline]
-    unsafe fn init(uninit: Self::Uninit) -> Self {
-        // SAFETY: value contained in the rc must be init (function invariant)
-        let init_ptr = unsafe { uninit.0.assume_init() };
-        // SAFETY:
-        // - exclusive reference is only ever exposed as `Pin<&mut T>`
-        // - memory is unpinned only after drop call, or `Container::move_out` (`core::mem::forget` at least)
-        let pin = unsafe { Pin::new_unchecked(init_ptr) };
-        Self(pin)
-    }
-
-    #[inline]
-    fn try_inner(&mut self) -> Option<Pin<&mut Self::Inner>> {
-        // SAFETY:
-        // - I'll only use `&mut Rc` to call `Rc::get_mut` here
-        // - `Rc::get_mut` is not interacting with `T` at all (apart from creating reference to it)
-        // - obtained reference is pinned again shortly below, and only returned as pinned
-        let rc = unsafe { pin_inner_mut(&mut self.0) };
-        if let Some(refm) = Rc::get_mut(rc) {
-            // SAFETY: `&mut T` refers to already-pinned `T`, that was unpinned right above to use `Rc::get_mut`
-            Some(unsafe { Pin::new_unchecked(refm) })
-        } else {
-            None
-        }
-    }
-
-    fn try_move_out<O>(mut self, action: impl FnOnce(*mut Self::Inner) -> O) -> Result<O, Self> {
-        // NOTE: I could've used `Rc::strong_count` here, but it would require `unsafe` code anyways, so I opted out for uniformity with implementation for `Arc`
-
-        // SAFETY: obtained reference will only be used for `Rc::get_mut`, which does not interact with the value in any way
-        let rc = unsafe { pin_inner_mut(&mut self.0) };
-        if Rc::get_mut(rc).is_none() {
-            return Err(self);
-        }
-        // SAFETY: so, this is a tricky part, but here's a quick rundown of why is this ok:
-        // - `*mut T` to inner value is obtained, but no reads and/or writes are performed here
-        // - then, `*mut T` is given to `action` for potential reads and/or writes, and not assumed to contain valid `T` after that. Essentially, `action` is supposed to act as `T`'s destructor
-        let rc = unsafe { Pin::into_inner_unchecked(self.0) };
-        let ptr_c = Rc::into_raw(rc); // disassemble the `Rc`, basically
-        let ptr_m = ptr_c.cast_mut(); // currently we have an exclusive access to data part of `Rc`'s allocation
-        let res = action(ptr_m);
-        let uptr_c = ptr_c.cast::<MaybeUninit<T>>(); // contained `T` is not valid anymore - treat it as `MaybeUninit`
-        // SAFETY:
-        // - `uptr_C` is derived from `ptr_c`, obtained from call to `Rc::into_raw`
-        // - `MaybeUninit<T>` has the same layout as `T`
-        let urc = unsafe { Rc::from_raw(uptr_c) };
-        // free Rc's allocation
-        // (not really; there potentially can be `Weak`s keeping the allocation alive, which this is in no way intended or supported - this drop still will not be an issue)
-        core::mem::drop(urc);
-        Ok(res)
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl_container_traits!(RcContainer<T> | <T>);
-
-#[derive(Debug)]
-#[doc(hidden)]
-#[cfg(feature = "std")]
 pub struct UninitArcContainer<T>(Arc<MaybeUninit<T>>);
+
+#[cfg(feature = "alloc")]
+impl<T> core::fmt::Debug for UninitArcContainer<T> {
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("UninitArcContainer").field(&*self.0).finish()
+    }
+}
 
 /// [`Container`] implementation via [`Arc`]
 ///
@@ -765,20 +647,21 @@ pub struct UninitArcContainer<T>(Arc<MaybeUninit<T>>);
 ///
 /// assert!(container2.try_inner().is_none(), "Non-excluive Arc should not be able to get &mut");
 /// let shared: &i32 = &container2; // shared reference is still ok
-/// let _ = container2.try_mv::<ArcContainer<_>>(()).expect_err("Non-exclusive Arc should not be able to move the value");
+/// assert!(container2.try_mv::<ArcContainer<_>>(()).is_none());
 /// ```
 #[derive(Debug)]
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 pub struct ArcContainer<T>(Pin<Arc<T>>);
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl<T> Clone for ArcContainer<T> {
+    #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl<T> Deref for ArcContainer<T> {
     type Target = T;
 
@@ -788,14 +671,15 @@ impl<T> Deref for ArcContainer<T> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl<T: core::fmt::Display> core::fmt::Display for ArcContainer<T> {
+    #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         T::fmt(&self.0, f)
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 // SAFETY:
 // - `UninitArcContainer` does not introduce shared ownership (it does contain `Arc`, but it's SO capability is encapsulated)
 // - Moving `ArcContainer` does not move `T`
@@ -807,18 +691,20 @@ unsafe impl<T> Container for ArcContainer<T> {
 
     #[inline]
     fn uninit(_allocator: ()) -> Self::Uninit {
-        UninitArcContainer(Arc::new_uninit())
+        UninitArcContainer(Arc::uninit())
     }
 
     #[inline]
     fn uninit_inner_ptr(uninit: &mut Self::Uninit) -> *mut Self::Inner {
-        Arc::get_mut(&mut uninit.0).unwrap().as_mut_ptr()
+        // SAFETY: `Self::Uninit` cannot be cloned and thus guaranteed unique access
+        let rf = unsafe { uninit.0.get_mut_unchecked() };
+        rf.as_mut_ptr()
     }
 
     #[inline]
     unsafe fn init(uninit: Self::Uninit) -> Self {
         // SAFETY: value contained in the arc must be init (function invariant)
-        let init_ptr = unsafe { uninit.0.assume_init() };
+        let init_ptr: Arc<_> = unsafe { uninit.0.assume_init() };
         // SAFETY:
         // - exclusive reference is only ever exposed as `Pin<&mut T>`
         // - memory is unpinned only after drop call, or `Container::move_out` (`core::mem::forget` at least)
@@ -832,8 +718,8 @@ unsafe impl<T> Container for ArcContainer<T> {
         // - I'll only use `&mut Arc` to call `Arc::get_mut` here
         // - `Arc::get_mut` is not interacting with `T` at all (apart from creating reference to it)
         // - obtained reference is pinned again shortly below, and only returned as pinned
-        let rc = unsafe { pin_inner_mut(&mut self.0) };
-        if let Some(refm) = Arc::get_mut(rc) {
+        let arc = unsafe { pin_inner_mut(&mut self.0) };
+        if let Some(refm) = Arc::get_mut(arc) {
             // SAFETY: `&mut T` refers to already-pinned `T`, that was unpinned right above to use `Arc::get_mut`
             Some(unsafe { Pin::new_unchecked(refm) })
         } else {
@@ -841,35 +727,17 @@ unsafe impl<T> Container for ArcContainer<T> {
         }
     }
 
-    fn try_move_out<O>(mut self, action: impl FnOnce(*mut Self::Inner) -> O) -> Result<O, Self> {
-        // NOTE: `Arc::strong_count == 1` does not guarantee proper memory ordering, since it loads counter with `Relaxed` ordering. `Arc` does have proper `is_unique` function, but the only way to use it is indirectly through `Arc::get_mut` call.
-
-        // SAFETY: obtained reference will only be used for `Arc::get_mut`, which does not interact with the value in any way
-        let rc = unsafe { pin_inner_mut(&mut self.0) };
-        if Arc::get_mut(rc).is_none() {
-            return Err(self);
-        }
-
-        // SAFETY: so, this is a tricky part, but here's a quick rundown of why is this ok:
-        // - `*mut T` to inner value is obtained, but no reads and/or writes are performed here
-        // - then, `*mut T` is given to `action` for potential reads and/or writes, and not assumed to contain valid `T` after that. Essentially, `action` is supposed to act as `T`'s destructor
-        let arc = unsafe { Pin::into_inner_unchecked(self.0) };
-        let ptr_c = Arc::into_raw(arc); // disassemble the `Arc`, basically
-        let ptr_m = ptr_c.cast_mut(); // currently we have an exclusive access to data part of `Arc`'s allocation
-        let res = action(ptr_m);
-        let uptr_c = ptr_c.cast::<MaybeUninit<T>>(); // contained `T` is not valid anymore - treat it as `MaybeUninit`
+    #[inline]
+    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Option<O> {
         // SAFETY:
-        // - `uptr_C` is derived from `ptr_c`, obtained from call to `Arc::into_raw`
-        // - `MaybeUninit<T>` has the same layout as `T`
-        let urc = unsafe { Arc::from_raw(uptr_c) };
-        // free Arc's allocation
-        // (not really; there potentially can be `Weak`s keeping the allocation alive, which this is in no way intended or supported - this drop still will not be an issue)
-        core::mem::drop(urc);
-        Ok(res)
+        // - `Arc::try_move_out` does not move the internal value
+        // - if `action` is ever called, value is not assumed to be init after that
+        let arc = unsafe { Pin::into_inner_unchecked(self.0) };
+        arc.try_move_out(action)
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(feature = "alloc")]
 impl_container_traits!(ArcContainer<T> | <T>);
 
 #[derive(Debug)]
@@ -975,8 +843,8 @@ unsafe impl<'r, T> Container for RefContainer<'r, T> {
     }
 
     #[inline]
-    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Result<O, Self> {
-        Ok(self.move_out(action))
+    fn try_move_out<O>(self, action: impl FnOnce(*mut Self::Inner) -> O) -> Option<O> {
+        Some(self.move_out(action))
     }
 }
 

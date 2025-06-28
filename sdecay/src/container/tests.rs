@@ -43,7 +43,7 @@ mod stack_ref {
 #[cfg(feature = "alloc")]
 mod alloc_box {
     use crate::container::{
-        Container, ExclusiveContainer, RcContainer,
+        ArcContainer, Container, ExclusiveContainer,
         tests::{S, TEXT},
     };
 
@@ -70,72 +70,72 @@ mod alloc_box {
     }
 
     #[test]
-    fn mv_to_rc() {
+    fn mv_to_arc() {
         let container = S::from_cstr_in::<C>((), TEXT);
-        let container2 = container.mv::<RcContainer<S>>(());
+        let container2 = container.mv::<ArcContainer<S>>(());
         let container3 = container2.clone();
         drop(container2);
         drop(container3);
     }
 }
 
+// #[cfg(feature = "alloc")]
+// mod alloc_rc {
+//     use crate::container::{
+//         BoxContainer, Container,
+//         tests::{S, TEXT},
+//     };
+//
+//     type C = crate::container::RcContainer<S>;
+//
+//     #[test]
+//     fn create() {
+//         let container = S::from_cstr_in::<C>((), TEXT);
+//         drop(container);
+//     }
+//
+//     #[test]
+//     fn create_clone() {
+//         let container = S::from_cstr_in::<C>((), TEXT);
+//         let container2 = container.clone();
+//         drop(container);
+//         drop(container2);
+//     }
+//
+//     #[test]
+//     fn try_mv_ok() {
+//         let container = S::from_cstr_in::<C>((), TEXT);
+//         let container2 = container.try_mv::<C>(()).unwrap();
+//         drop(container2);
+//     }
+//
+//     #[test]
+//     fn try_mv_err() {
+//         let container = S::from_cstr_in::<C>((), TEXT);
+//         let container2 = container.clone();
+//         let container = container.try_mv::<C>(()).unwrap_err();
+//         drop(container);
+//         let container3 = container2.try_mv::<C>(()).unwrap();
+//         drop(container3);
+//     }
+//
+//     #[test]
+//     fn try_mv_to_box() {
+//         let container = S::from_cstr_in::<C>((), TEXT);
+//         let container2 = container.clone();
+//         let _ = container.try_mv::<BoxContainer<S>>(()).unwrap_err();
+//         let container3 = container2.try_mv::<BoxContainer<S>>(()).unwrap();
+//         drop(container3);
+//     }
+// }
+
 #[cfg(feature = "alloc")]
-mod alloc_rc {
-    use crate::container::{
-        BoxContainer, Container,
-        tests::{S, TEXT},
-    };
-
-    type C = crate::container::RcContainer<S>;
-
-    #[test]
-    fn create() {
-        let container = S::from_cstr_in::<C>((), TEXT);
-        drop(container);
-    }
-
-    #[test]
-    fn create_clone() {
-        let container = S::from_cstr_in::<C>((), TEXT);
-        let container2 = container.clone();
-        drop(container);
-        drop(container2);
-    }
-
-    #[test]
-    fn try_mv_ok() {
-        let container = S::from_cstr_in::<C>((), TEXT);
-        let container2 = container.try_mv::<C>(()).unwrap();
-        drop(container2);
-    }
-
-    #[test]
-    fn try_mv_err() {
-        let container = S::from_cstr_in::<C>((), TEXT);
-        let container2 = container.clone();
-        let container = container.try_mv::<C>(()).unwrap_err();
-        drop(container);
-        let container3 = container2.try_mv::<C>(()).unwrap();
-        drop(container3);
-    }
-
-    #[test]
-    fn try_mv_to_box() {
-        let container = S::from_cstr_in::<C>((), TEXT);
-        let container2 = container.clone();
-        let _ = container.try_mv::<BoxContainer<S>>(()).unwrap_err();
-        let container3 = container2.try_mv::<BoxContainer<S>>(()).unwrap();
-        drop(container3);
-    }
-}
-
-#[cfg(feature = "std")]
 mod alloc_arc {
     use core::hint::black_box;
     use std::{sync::Arc, thread::spawn};
 
     use crate::container::{
-        BoxContainer, Container,
+        ArcContainer, BoxContainer, Container,
         tests::{S, TEXT},
     };
 
@@ -166,8 +166,7 @@ mod alloc_arc {
     fn try_mv_err() {
         let container = S::from_cstr_in::<C>((), TEXT);
         let container2 = container.clone();
-        let container = container.try_mv::<C>(()).unwrap_err();
-        drop(container);
+        assert!(container.try_mv::<C>(()).is_none());
         let container3 = container2.try_mv::<C>(()).unwrap();
         drop(container3);
     }
@@ -176,7 +175,7 @@ mod alloc_arc {
     fn try_mv_to_box() {
         let container = S::from_cstr_in::<C>((), TEXT);
         let container2 = container.clone();
-        let _ = container.try_mv::<BoxContainer<S>>(()).unwrap_err();
+        assert!(container.try_mv::<BoxContainer<S>>(()).is_none());
         let container3 = container2.try_mv::<BoxContainer<S>>(()).unwrap();
         drop(container3);
     }
@@ -211,38 +210,53 @@ mod alloc_arc {
     }
 
     #[test]
+    fn crate_get_mut() {
+        let mut ucontainer = ArcContainer::<i32>::uninit(());
+        let ptr = ArcContainer::<i32>::uninit_inner_ptr(&mut ucontainer);
+        unsafe { core::ptr::write(ptr, 42) };
+        let mut container = unsafe { ArcContainer::init(ucontainer) };
+        let _refmut = container
+            .try_inner()
+            .expect("This is the only container now; should get a reference");
+    }
+
+    #[test]
     fn mt_move() {
-        const THREADS: usize = 10;
-        let container = S::from_cstr_in::<C>((), TEXT);
-        let sem = Arc::new(std::sync::Barrier::new(THREADS + 1));
-        let handles = (0..THREADS)
-            .map(|_| {
-                spawn({
-                    let container = container.clone();
-                    let sem = sem.clone();
-                    move || {
-                        sem.wait();
-                        assert_eq!(container.as_cstr(), TEXT);
-                        container.try_mv::<BoxContainer<_>>(()).ok()
-                    }
-                })
-            })
-            .collect::<Vec<_>>();
-        drop(container);
-        sem.wait();
-        let container: BoxContainer<_> = handles
-            .into_iter()
-            .fold(None, |acc, res| {
-                match (
-                    acc,
-                    res.join().expect("Should successfully join the thread"),
-                ) {
-                    (None, None) => None,
-                    (Some(b), None) | (None, Some(b)) => Some(b),
-                    (Some(_), Some(_)) => unreachable!("Cannot produce two box containers"),
-                }
-            })
-            .expect("One of the threads should get the value");
-        drop(container);
+        for threads in 1..=16 {
+            let sem = Arc::new(std::sync::Barrier::new(threads + 1));
+            for _ in 0..30 {
+                let container = S::from_cstr_in::<C>((), TEXT);
+                let handles = (0..threads)
+                    .map(|_| {
+                        spawn({
+                            let container = container.clone();
+                            let sem = sem.clone();
+                            move || {
+                                sem.wait();
+                                assert_eq!(container.as_cstr(), TEXT);
+                                container.try_mv::<BoxContainer<_>>(())
+                            }
+                        })
+                    })
+                    .collect::<Vec<_>>();
+                drop(container);
+                sem.wait();
+                let container: BoxContainer<_> = handles
+                    .into_iter()
+                    .fold(None, |acc, res| {
+                        match (
+                            acc,
+                            res.join().expect("Should successfully join the thread"),
+                        ) {
+                            (None, None) => None,
+                            (Some(b), None) | (None, Some(b)) => Some(b),
+                            (Some(_), Some(_)) => unreachable!("Cannot produce two box containers"),
+                        }
+                    })
+                    .expect("One of the threads should get the value");
+                // there was a bug at this point with incorrect `try_move_out` implementation
+                drop(container);
+            }
+        }
     }
 }
