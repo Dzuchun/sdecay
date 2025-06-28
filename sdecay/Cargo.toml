@@ -5,5 +5,8 @@ edition = "2024"
 
 [dependencies]
 sdecay-sys = { path = "../sys" }
+# these are proc macros
+nolt = { path = "nolt" }
+
 [lints]
 workspace = true
