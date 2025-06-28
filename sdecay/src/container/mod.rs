@@ -1005,3 +1005,6 @@ impl<T> ExclusiveContainer for RefContainer<'_, T> {
 }
 
 impl_container_traits!(RefContainer<'r, T> | <'r, T> lt: <'r>);
+
+#[cfg(test)]
+mod tests;
