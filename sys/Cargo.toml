@@ -13,3 +13,6 @@ cc = "1.2.27"
 [features]
 default = []
 git = []
+
+[lints]
+workspace = true

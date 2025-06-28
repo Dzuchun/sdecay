@@ -1,3 +1,5 @@
+#![expect(missing_docs)]
+
 use std::{
     env::var_os,
     path::{Path, PathBuf},
