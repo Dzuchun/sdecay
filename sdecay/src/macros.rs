@@ -77,7 +77,7 @@ macro_rules! impl_moveable {
         unsafe impl $(<$($garg),+>)? crate::container::Moveable for $rtype $(<$($garg),+>)? {
             unsafe fn mv(dst: *mut Self, src: *mut Self) {
                 let dst = dst.cast();
-                let src = src.cast_const().cast();
+                let src = src.cast();
                 // SAFETY: ffi to controlled function on C++ side
                 unsafe { ::paste::paste! { sdecay_sys::sdecay::[<move_ $name>](dst, src) } };
             }

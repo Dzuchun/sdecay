@@ -2,7 +2,7 @@
 
 #include "SandiaDecay.h"
 #include <cstdlib>
-#include <memory>
+#include <exception>
 #include <string.h>
 #include <vector>
 
@@ -14,15 +14,18 @@ template <typename T> inline void write(T *dst, T src) {
 
 // cred: cGPT
 // prompt: alike "please give me Rust core::ptr::read, but in C++"
-template <typename T> void move_from_to(T *dst, T const *src) {
+template <typename T> void move_from_to(T *dst, T *src) {
     static_assert(std::is_move_constructible_v<T>,
                   "T must be move constructible");
+    static_assert(std::is_destructible_v<T>, "T must be destructible");
 
+    // I still have no idea what this warning means exactly
 #pragma GCC diagnostic push
-// I still have no idea what this warning means exactly
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
     ::new (static_cast<void *>(dst)) T(std::move(*src));
 #pragma GCC diagnostic pop
+    // actually destruct value at `src`
+    src->~T();
 }
 
 namespace sdecay {
@@ -101,13 +104,25 @@ STD_VEC_OPS_DEF(coincidence_pair, CoincidencePair);
 STD_VEC_OPS_DEF(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 STD_VEC_OPS_DEF(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
-Exception::Exception(std::exception ex) {
-    this->inner = std::make_unique<std::exception>(ex);
+Exception Exception::catch_current() {
+    Exception e;
+    new (e.inner) std::exception_ptr(std::current_exception());
+    return e;
 }
 
-Exception::~Exception() {}
+const char *Exception::what(Exception const &ex) {
+    try {
+        auto ptr = reinterpret_cast<std::exception_ptr const *>(ex.inner);
+        std::rethrow_exception(*ptr);
+    } catch (const std::exception &ex) {
+        return ex.what();
+    }
+}
 
-const char *Exception::what() const { return this->inner->what(); }
+void Exception::destruct(Exception &ex) {
+    auto *ptr = reinterpret_cast<std::exception_ptr *>(ex.inner);
+    ptr->~exception_ptr();
+}
 
 #define TRY_CALL_DEF(name, ret_type, call, ...)                                \
     bool try_##name(ret_type *out, Exception *error, ##__VA_ARGS__) {          \
@@ -115,9 +130,9 @@ const char *Exception::what() const { return this->inner->what(); }
             ret_type res = call;                                               \
             write(out, res);                                                   \
             return true;                                                       \
-        } catch (std::exception & ex) {                                        \
-            auto err = Exception(ex);                                          \
-            write(error, std::move(err));                                      \
+        } catch (...) {                                                        \
+            auto ex = Exception::catch_current();                              \
+            write(error, ex);                                                  \
             return false;                                                      \
         }                                                                      \
     }
@@ -129,7 +144,7 @@ const char *Exception::what() const { return this->inner->what(); }
     }
 
 #define MOVE_DEF(name, typ)                                                    \
-    void move_##name(typ *dst, typ const *src) { move_from_to(dst, src); }
+    void move_##name(typ *dst, typ *src) { move_from_to(dst, src); }
 
 MOVE_DEF(database, SandiaDecay::SandiaDecayDataBase);
 MOVE_DEF(mixture, SandiaDecay::NuclideMixture);
@@ -148,8 +163,7 @@ MOVE_DEF(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 MOVE_DEF(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
 #define MOVE_VEC_DEF(name, typ)                                                \
-    void move_##name##_vec(std::vector<typ> *dst,                              \
-                           std::vector<typ> const *src) {                      \
+    void move_##name##_vec(std::vector<typ> *dst, std::vector<typ> *src) {     \
         move_from_to(dst, src);                                                \
     }
 

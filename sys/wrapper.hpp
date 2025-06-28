@@ -1,6 +1,7 @@
 #include "SandiaDecay.h"
 #include <cstddef>
-#include <memory>
+#include <exception>
+#include <stdint.h>
 #include <string.h>
 #include <vector>
 
@@ -63,16 +64,14 @@ STD_VEC_OPS(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
 class Exception {
   public:
-    Exception(std::exception ex);
+    static Exception catch_current();
 
-    ~Exception();
+    static const char *what(Exception const &);
 
-    // move constructor was deleted, because
-    Exception(Exception &&) = default;
+    static void destruct(Exception &);
 
-    const char *what() const;
-
-    std::unique_ptr<std::exception> inner;
+    // thanks cgpt :melt:
+    alignas(std::exception_ptr) uint8_t inner[sizeof(std::exception_ptr)];
 };
 
 static_assert(std::is_move_constructible_v<Exception>,
@@ -87,7 +86,7 @@ typedef struct {
 #define OUT_CALL(name, recvt, rt, ...)                                         \
     void name(rt *out, recvt self, ##__VA_ARGS__);
 
-#define MOVE(name, typ) void move_##name(typ *dst, typ const *src);
+#define MOVE(name, typ) void move_##name(typ *dst, typ *src);
 
 MOVE(database, SandiaDecay::SandiaDecayDataBase);
 MOVE(mixture, SandiaDecay::NuclideMixture);
@@ -106,7 +105,7 @@ MOVE(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 MOVE(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
 #define MOVE_VEC(name, typ)                                                    \
-    void move_##name##_vec(std::vector<typ> *dst, std::vector<typ> const *src);
+    void move_##name##_vec(std::vector<typ> *dst, std::vector<typ> *src);
 
 MOVE_VEC(char, char);
 MOVE_VEC(transition, SandiaDecay::Transition);

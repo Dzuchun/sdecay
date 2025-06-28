@@ -34,11 +34,6 @@ pub mod root {
             pub _address: u8,
         }
         #[repr(C)]
-        #[repr(align(8))]
-        pub struct exception {
-            pub _bindgen_opaque_blob: u64,
-        }
-        #[repr(C)]
         pub struct allocator {
             pub _address: u8,
         }
@@ -89,19 +84,6 @@ pub mod root {
             pub _bindgen_opaque_blob: u8,
         }
         pub type string = root::__BindgenOpaqueArray<u64, 4usize>;
-        #[repr(C)]
-        pub struct default_delete {
-            pub _address: u8,
-        }
-        #[repr(C)]
-        pub struct unique_ptr {
-            pub _address: u8,
-        }
-        pub type unique_ptr__DeleterConstraint = u8;
-        pub type unique_ptr_pointer = u8;
-        pub type unique_ptr_element_type = u8;
-        pub type unique_ptr_deleter_type = u8;
-        pub type unique_ptr___safe_conversion_up = u8;
     }
     pub mod __gnu_cxx {
         #[allow(unused_imports)]
@@ -2025,14 +2007,6 @@ pub mod root {
             ) -> root::std::string;
         }
     }
-    pub mod __pstl {
-        #[allow(unused_imports)]
-        use self::super::super::root;
-        pub mod execution {
-            #[allow(unused_imports)]
-            use self::super::super::super::root;
-        }
-    }
     pub mod sdecay {
         #[allow(unused_imports)]
         use self::super::super::root;
@@ -3205,40 +3179,36 @@ pub mod root {
             );
         }
         #[repr(C)]
+        #[repr(align(8))]
         pub struct Exception {
-            pub inner: u64,
+            pub inner: [u8; 8usize],
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZNK6sdecay9Exception4whatEv"]
+            #[link_name = "\u{1}_ZN6sdecay9Exception13catch_currentEv"]
+            pub fn Exception_catch_current() -> root::sdecay::Exception;
+        }
+        unsafe extern "C" {
+            #[link_name = "\u{1}_ZN6sdecay9Exception4whatERKS0_"]
             pub fn Exception_what(
-                this: *const root::sdecay::Exception,
+                arg1: *const root::sdecay::Exception,
             ) -> *const ::core::ffi::c_char;
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay9ExceptionC1ESt9exception"]
-            pub fn Exception_Exception(
-                this: *mut root::sdecay::Exception,
-                ex: root::std::exception,
-            );
-        }
-        unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay9ExceptionD1Ev"]
-            pub fn Exception_Exception_destructor(this: *mut root::sdecay::Exception);
+            #[link_name = "\u{1}_ZN6sdecay9Exception8destructERS0_"]
+            pub fn Exception_destruct(arg1: *mut root::sdecay::Exception);
         }
         impl Exception {
             #[inline]
-            pub unsafe fn what(&self) -> *const ::core::ffi::c_char {
-                Exception_what(self)
+            pub unsafe fn catch_current() -> root::sdecay::Exception {
+                Exception_catch_current()
             }
             #[inline]
-            pub unsafe fn new(ex: root::std::exception) -> Self {
-                let mut __bindgen_tmp = ::core::mem::MaybeUninit::uninit();
-                Exception_Exception(__bindgen_tmp.as_mut_ptr(), ex);
-                __bindgen_tmp.assume_init()
+            pub unsafe fn what(arg1: *const root::sdecay::Exception) -> *const ::core::ffi::c_char {
+                Exception_what(arg1)
             }
             #[inline]
-            pub unsafe fn destruct(&mut self) {
-                Exception_Exception_destructor(self)
+            pub unsafe fn destruct(arg1: *mut root::sdecay::Exception) {
+                Exception_destruct(arg1)
             }
         }
         #[repr(C)]
@@ -3246,238 +3216,238 @@ pub mod root {
             pub _address: u8,
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay13move_databaseEPN11SandiaDecay19SandiaDecayDataBaseEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay13move_databaseEPN11SandiaDecay19SandiaDecayDataBaseES2_"]
             pub fn move_database(
                 dst: *mut root::SandiaDecay::SandiaDecayDataBase,
-                src: *const root::SandiaDecay::SandiaDecayDataBase,
+                src: *mut root::SandiaDecay::SandiaDecayDataBase,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay12move_mixtureEPN11SandiaDecay14NuclideMixtureEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay12move_mixtureEPN11SandiaDecay14NuclideMixtureES2_"]
             pub fn move_mixture(
                 dst: *mut root::SandiaDecay::NuclideMixture,
-                src: *const root::SandiaDecay::NuclideMixture,
+                src: *mut root::SandiaDecay::NuclideMixture,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay11move_stringEPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPKS5_"]
-            pub fn move_string(dst: *mut root::std::string, src: *const root::std::string);
+            #[link_name = "\u{1}_ZN6sdecay11move_stringEPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES6_"]
+            pub fn move_string(dst: *mut root::std::string, src: *mut root::std::string);
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay12move_nuclideEPN11SandiaDecay7NuclideEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay12move_nuclideEPN11SandiaDecay7NuclideES2_"]
             pub fn move_nuclide(
                 dst: *mut root::SandiaDecay::Nuclide,
-                src: *const root::SandiaDecay::Nuclide,
+                src: *mut root::SandiaDecay::Nuclide,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay15move_transitionEPN11SandiaDecay10TransitionEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay15move_transitionEPN11SandiaDecay10TransitionES2_"]
             pub fn move_transition(
                 dst: *mut root::SandiaDecay::Transition,
-                src: *const root::SandiaDecay::Transition,
+                src: *mut root::SandiaDecay::Transition,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay17move_rad_particleEPN11SandiaDecay11RadParticleEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay17move_rad_particleEPN11SandiaDecay11RadParticleES2_"]
             pub fn move_rad_particle(
                 dst: *mut root::SandiaDecay::RadParticle,
-                src: *const root::SandiaDecay::RadParticle,
+                src: *mut root::SandiaDecay::RadParticle,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay27move_nuclide_abundance_pairEPN11SandiaDecay20NuclideAbundancePairEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay27move_nuclide_abundance_pairEPN11SandiaDecay20NuclideAbundancePairES2_"]
             pub fn move_nuclide_abundance_pair(
                 dst: *mut root::SandiaDecay::NuclideAbundancePair,
-                src: *const root::SandiaDecay::NuclideAbundancePair,
+                src: *mut root::SandiaDecay::NuclideAbundancePair,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay26move_nuclide_activity_pairEPN11SandiaDecay19NuclideActivityPairEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay26move_nuclide_activity_pairEPN11SandiaDecay19NuclideActivityPairES2_"]
             pub fn move_nuclide_activity_pair(
                 dst: *mut root::SandiaDecay::NuclideActivityPair,
-                src: *const root::SandiaDecay::NuclideActivityPair,
+                src: *mut root::SandiaDecay::NuclideActivityPair,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay27move_nuclide_num_atoms_pairEPN11SandiaDecay19NuclideNumAtomsPairEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay27move_nuclide_num_atoms_pairEPN11SandiaDecay19NuclideNumAtomsPairES2_"]
             pub fn move_nuclide_num_atoms_pair(
                 dst: *mut root::SandiaDecay::NuclideNumAtomsPair,
-                src: *const root::SandiaDecay::NuclideNumAtomsPair,
+                src: *mut root::SandiaDecay::NuclideNumAtomsPair,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay26move_energy_intensity_pairEPN11SandiaDecay19EnergyIntensityPairEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay26move_energy_intensity_pairEPN11SandiaDecay19EnergyIntensityPairES2_"]
             pub fn move_energy_intensity_pair(
                 dst: *mut root::SandiaDecay::EnergyIntensityPair,
-                src: *const root::SandiaDecay::EnergyIntensityPair,
+                src: *mut root::SandiaDecay::EnergyIntensityPair,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay22move_energy_count_pairEPN11SandiaDecay15EnergyCountPairEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay22move_energy_count_pairEPN11SandiaDecay15EnergyCountPairES2_"]
             pub fn move_energy_count_pair(
                 dst: *mut root::SandiaDecay::EnergyCountPair,
-                src: *const root::SandiaDecay::EnergyCountPair,
+                src: *mut root::SandiaDecay::EnergyCountPair,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay21move_energy_rate_pairEPN11SandiaDecay14EnergyRatePairEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay21move_energy_rate_pairEPN11SandiaDecay14EnergyRatePairES2_"]
             pub fn move_energy_rate_pair(
                 dst: *mut root::SandiaDecay::EnergyRatePair,
-                src: *const root::SandiaDecay::EnergyRatePair,
+                src: *mut root::SandiaDecay::EnergyRatePair,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay12move_elementEPN11SandiaDecay7ElementEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay12move_elementEPN11SandiaDecay7ElementES2_"]
             pub fn move_element(
                 dst: *mut root::SandiaDecay::Element,
-                src: *const root::SandiaDecay::Element,
+                src: *mut root::SandiaDecay::Element,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay24move_time_evolution_termEPN11SandiaDecay17TimeEvolutionTermEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay24move_time_evolution_termEPN11SandiaDecay17TimeEvolutionTermES2_"]
             pub fn move_time_evolution_term(
                 dst: *mut root::SandiaDecay::TimeEvolutionTerm,
-                src: *const root::SandiaDecay::TimeEvolutionTerm,
+                src: *mut root::SandiaDecay::TimeEvolutionTerm,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay27move_nuclide_time_evolutionEPN11SandiaDecay20NuclideTimeEvolutionEPKS1_"]
+            #[link_name = "\u{1}_ZN6sdecay27move_nuclide_time_evolutionEPN11SandiaDecay20NuclideTimeEvolutionES2_"]
             pub fn move_nuclide_time_evolution(
                 dst: *mut root::SandiaDecay::NuclideTimeEvolution,
-                src: *const root::SandiaDecay::NuclideTimeEvolution,
+                src: *mut root::SandiaDecay::NuclideTimeEvolution,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay13move_char_vecEPSt6vectorIcSaIcEEPKS2_"]
+            #[link_name = "\u{1}_ZN6sdecay13move_char_vecEPSt6vectorIcSaIcEES3_"]
             pub fn move_char_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay19move_transition_vecEPSt6vectorIN11SandiaDecay10TransitionESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay19move_transition_vecEPSt6vectorIN11SandiaDecay10TransitionESaIS2_EES5_"]
             pub fn move_transition_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay23move_transition_ptr_vecEPSt6vectorIPKN11SandiaDecay10TransitionESaIS4_EEPKS6_"]
+            #[link_name = "\u{1}_ZN6sdecay23move_transition_ptr_vecEPSt6vectorIPKN11SandiaDecay10TransitionESaIS4_EES7_"]
             pub fn move_transition_ptr_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay21move_rad_particle_vecEPSt6vectorIN11SandiaDecay11RadParticleESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay21move_rad_particle_vecEPSt6vectorIN11SandiaDecay11RadParticleESaIS2_EES5_"]
             pub fn move_rad_particle_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay31move_nuclide_abundance_pair_vecEPSt6vectorIN11SandiaDecay20NuclideAbundancePairESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay31move_nuclide_abundance_pair_vecEPSt6vectorIN11SandiaDecay20NuclideAbundancePairESaIS2_EES5_"]
             pub fn move_nuclide_abundance_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay30move_nuclide_activity_pair_vecEPSt6vectorIN11SandiaDecay19NuclideActivityPairESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay30move_nuclide_activity_pair_vecEPSt6vectorIN11SandiaDecay19NuclideActivityPairESaIS2_EES5_"]
             pub fn move_nuclide_activity_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay31move_nuclide_num_atoms_pair_vecEPSt6vectorIN11SandiaDecay19NuclideNumAtomsPairESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay31move_nuclide_num_atoms_pair_vecEPSt6vectorIN11SandiaDecay19NuclideNumAtomsPairESaIS2_EES5_"]
             pub fn move_nuclide_num_atoms_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay30move_energy_intensity_pair_vecEPSt6vectorIN11SandiaDecay19EnergyIntensityPairESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay30move_energy_intensity_pair_vecEPSt6vectorIN11SandiaDecay19EnergyIntensityPairESaIS2_EES5_"]
             pub fn move_energy_intensity_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay26move_energy_count_pair_vecEPSt6vectorIN11SandiaDecay15EnergyCountPairESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay26move_energy_count_pair_vecEPSt6vectorIN11SandiaDecay15EnergyCountPairESaIS2_EES5_"]
             pub fn move_energy_count_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay25move_energy_rate_pair_vecEPSt6vectorIN11SandiaDecay14EnergyRatePairESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay25move_energy_rate_pair_vecEPSt6vectorIN11SandiaDecay14EnergyRatePairESaIS2_EES5_"]
             pub fn move_energy_rate_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay16move_nuclide_vecEPSt6vectorIN11SandiaDecay7NuclideESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay16move_nuclide_vecEPSt6vectorIN11SandiaDecay7NuclideESaIS2_EES5_"]
             pub fn move_nuclide_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay20move_nuclide_ref_vecEPSt6vectorIPKN11SandiaDecay7NuclideESaIS4_EEPKS6_"]
+            #[link_name = "\u{1}_ZN6sdecay20move_nuclide_ref_vecEPSt6vectorIPKN11SandiaDecay7NuclideESaIS4_EES7_"]
             pub fn move_nuclide_ref_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay24move_nuclide_raw_ptr_vecEPSt6vectorIPKN11SandiaDecay7NuclideESaIS4_EEPKS6_"]
+            #[link_name = "\u{1}_ZN6sdecay24move_nuclide_raw_ptr_vecEPSt6vectorIPKN11SandiaDecay7NuclideESaIS4_EES7_"]
             pub fn move_nuclide_raw_ptr_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay16move_element_vecEPSt6vectorIN11SandiaDecay7ElementESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay16move_element_vecEPSt6vectorIN11SandiaDecay7ElementESaIS2_EES5_"]
             pub fn move_element_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay24move_element_raw_ptr_vecEPSt6vectorIPKN11SandiaDecay7ElementESaIS4_EEPKS6_"]
+            #[link_name = "\u{1}_ZN6sdecay24move_element_raw_ptr_vecEPSt6vectorIPKN11SandiaDecay7ElementESaIS4_EES7_"]
             pub fn move_element_raw_ptr_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay20move_element_ref_vecEPSt6vectorIPKN11SandiaDecay7ElementESaIS4_EEPKS6_"]
+            #[link_name = "\u{1}_ZN6sdecay20move_element_ref_vecEPSt6vectorIPKN11SandiaDecay7ElementESaIS4_EES7_"]
             pub fn move_element_ref_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay25move_coincidence_pair_vecEPSt6vectorISt4pairItfESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay25move_coincidence_pair_vecEPSt6vectorISt4pairItfESaIS2_EES5_"]
             pub fn move_coincidence_pair_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay28move_time_evolution_term_vecEPSt6vectorIN11SandiaDecay17TimeEvolutionTermESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay28move_time_evolution_term_vecEPSt6vectorIN11SandiaDecay17TimeEvolutionTermESaIS2_EES5_"]
             pub fn move_time_evolution_term_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         unsafe extern "C" {
-            #[link_name = "\u{1}_ZN6sdecay31move_nuclide_time_evolution_vecEPSt6vectorIN11SandiaDecay20NuclideTimeEvolutionESaIS2_EEPKS4_"]
+            #[link_name = "\u{1}_ZN6sdecay31move_nuclide_time_evolution_vecEPSt6vectorIN11SandiaDecay20NuclideTimeEvolutionESaIS2_EES5_"]
             pub fn move_nuclide_time_evolution_vec(
                 dst: *mut root::__BindgenOpaqueArray<u64, 3usize>,
-                src: *const root::__BindgenOpaqueArray<u64, 3usize>,
+                src: *mut root::__BindgenOpaqueArray<u64, 3usize>,
             );
         }
         pub mod database {
