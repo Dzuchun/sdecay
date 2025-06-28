@@ -3,6 +3,9 @@ name = "sdecay"
 version = "0.1.0"
 edition = "2024"
 
+[package.metadata.cargo-all-features]
+denylist = [ "git" ] # don't try enabling git feature
+
 [dependencies]
 sdecay-sys = { path = "../sys" }
 # these are proc macros
@@ -14,6 +17,7 @@ paste = "1.0.15"
 default = ["std"]
 std = ["alloc"]
 alloc = []
+git = ["sdecay-sys/git"]
 
 [lints]
 workspace = true
