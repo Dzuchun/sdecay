@@ -7,7 +7,7 @@ use core::{
 };
 
 use crate::{
-    generic_list, impl_moveable,
+    containers, impl_moveable,
     wrapper::{BindgenString, Wrapper},
 };
 
@@ -209,12 +209,12 @@ impl AsRef<CStr> for StdString {
     }
 }
 
-generic_list! {!self StdString as sdecay_sys::sdecay: std_string_from_cstr ->
+containers! {!self StdString as sdecay_sys::sdecay: std_string_from_cstr ->
     /// Allocates new `std::string` from `&`[`CStr`]
     from_cstr(cstr: impl AsRef<CStr>)
     (cstr.as_ref().as_ptr()) -> StdString
 }
-generic_list! {!self StdString as sdecay_sys::sdecay: std_string_from_bytes ->
+containers! {!self StdString as sdecay_sys::sdecay: std_string_from_bytes ->
     /// Allocates new `std::string` from `&`[`[u8]`]
     from_bytes(data: impl AsRef<[u8]>)
     (data.as_ref().as_ptr().cast(), data.as_ref().len()) -> StdString

@@ -22,7 +22,7 @@ pub use paste::paste;
 
 #[forbid(unsafe_code)]
 mod macros;
-use macros::{forward_pin_mut_call, generic_list, impl_moveable, nolt, vec_wrapper, wrapper};
+use macros::{containers, forward_pin_mut_call, impl_moveable, nolt, vec_wrapper, wrapper};
 
 /// Constants defining `Sandia Decay`'s unit system.
 ///

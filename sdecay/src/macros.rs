@@ -4,7 +4,84 @@
 
 pub(crate) use nolt::nolt;
 
-macro_rules! generic_list {
+macro_rules! containers {
+    ($recv:path $([$($garg:tt),+])?: $cname:path =>
+        $(#[$($attr:tt)+])* $name:ident $([ $(self: $l:lifetime $(,)?)? $($narg:tt),+])? (
+            $($arg:ident: $atype:ty => $carg:expr),* $(,)?
+        ) -> $rtype:path $([$($rarg:tt),+])?) => {
+        ::paste::paste! {
+            impl $(<$($garg),+>)? $recv $(<$($garg),+>)? {
+                $(#[$($attr)+])*
+                // #[cfg_attr(doc, doc(hidden))]
+                pub fn [< $name _in>] <$($l ,)?$($narg, )? C: crate::container::Container<Inner = $rtype $(<$($rarg),+>)?>>(
+                    & $($($l)?)? self,
+                    allocator: C::Allocator,
+                    $($arg: $atype,)*
+                ) -> C {
+                    let mut container = C::uninit(allocator);
+                    let container_ptr = C::uninit_inner_ptr(&mut container);
+                    let self_ptr = self.ptr();
+                    // SAFETY: ffi call with
+                    // - statically validated type representations
+                    // - correct pointer constness (as of bindgen, that is)
+                    // - pointed objects (except container one) are all live, since pointers were just created from references
+                    unsafe { $cname(
+                        container_ptr.cast::<<$rtype $(<$($rarg),+>)? as crate::wrapper::Wrapper>::CSide>(),
+                        self_ptr.cast::<<Self as crate::wrapper::Wrapper>::CSide>(),
+                        $($carg,)*
+                    ) };
+                    // SAFETY: ffi call above moves a live struct into the container, initializing it
+                    unsafe { C::init(container) }
+                }
+
+                $(#[$($attr)+])*
+                #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use [`Box`]-based container")]
+                #[cfg(feature = "alloc")]
+                #[inline]
+                pub fn $name $(<$($l ,)?$($narg,)+>)?(
+                    & $($($l)?)? self,
+                    $($arg: $atype,)*
+                ) -> crate::container::BoxContainer<$rtype $(<$($rarg),+>)?> {
+                    self.[<$name _in>]((), $($arg,)*)
+                }
+
+                $(#[$($attr)+])*
+                #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use [`Arc`](std::sync::Arc)-based container")]
+                #[doc = "\n\nNOTE: if `std` feature is not enabled, this method uses [`Rc`](alloc::rc::Rc)-based container instead!"]
+                #[cfg(feature = "alloc")]
+                #[inline]
+                pub fn [<$name _shared>] $(<$($l ,)?$($narg,)+>)?(
+                    & $($($l)?)? self,
+                    $($arg: $atype,)*
+                ) -> crate::container::ArcContainer<$rtype $(<$($rarg),+>)?> {
+                    self.[<$name _in>]((), $($arg,)*)
+                }
+
+                // $(#[$($attr)+])*
+                // #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use [`Rc`](alloc::rc::Rc)-based container")]
+                // #[doc = "\n\nWARNING: `std` feature is not enabled, note the container type!"]
+                // #[cfg(all(feature = "alloc", not(feature = "std")))]
+                // #[inline]
+                // pub fn [<$name _shared>] $(<$($l ,)?$($narg,)+>)?(
+                //     & $($($l)?)? self,
+                //     $($arg: $atype,)*
+                // ) -> crate::container::RcContainer<$rtype $(<$($rarg),+>)?> {
+                //     self.[<$name _in>]((), $($arg,)*)
+                // }
+
+                $(#[$($attr)+])*
+                #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use manually-allocated container")]
+                #[inline]
+                pub fn [<$name _local>] <'r, $($($l ,)?$($narg,)+)?>(
+                    & $($($l)?)? self,
+                    allocator: &'r mut core::mem::MaybeUninit<$rtype $(<$($rarg),+>)?>,
+                    $($arg: $atype,)*
+                ) -> crate::container::RefContainer<'r, $rtype $(<$($rarg),+>)?> {
+                    self.[<$name _in>](allocator, $($arg,)*)
+                }
+            }
+        }
+    };
     (!self $recv:ty as $methods:path: $cname:ident -> $(#[$($attr:tt)+])* $name:ident ($($arg:ident: $atype:ty),* $(,)?) ($($carg:expr),*$(,)?) -> $rtype:path $(| $l:lifetime)?) => {
         ::paste::paste! {
             impl $recv {
@@ -49,6 +126,18 @@ macro_rules! generic_list {
                     Self::[<$name _in>]((), $($arg,)*)
                 }
 
+                // $(#[$($attr)+])*
+                // #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use [`Rc`](alloc::rc::Rc)-based container")]
+                // #[doc = "\n\nWARNING: `std` feature is not enabled, note the container type!"]
+                // #[cfg(all(feature = "alloc", not(feature = "std")))]
+                // #[inline]
+                // pub fn [<$name _shared>]$(<$l>)?(
+                //     & $($l)? self,
+                //     $($arg: $atype,)*
+                // ) -> crate::container::RcContainer<$rtype $(<$l>)?> {
+                //     Self::[<$name _in>]((), $($arg,)*)
+                // }
+
                 $(#[$($attr)+])*
                 #[doc = concat!("\n\nThis function is identical to [`", stringify!($name), "_in`](", stringify!($recv), "::", stringify!($name), "_in), but hard-coded to use manually-allocated container")]
                 #[inline]
@@ -62,7 +151,7 @@ macro_rules! generic_list {
         }
     };
 }
-pub(crate) use generic_list;
+pub(crate) use containers;
 
 macro_rules! wrapper {
     ($(#[$($attr:tt)+])* $inner:path => $wrapper:ident $([$($garg:tt)+])? {
