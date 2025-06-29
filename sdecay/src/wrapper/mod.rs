@@ -5,6 +5,8 @@
 use core::ffi::{c_double, c_float};
 
 use crate::wrapper;
+mod nuclide;
+pub use nuclide::Nuclide;
 
 pub(crate) type BindgenString = sdecay_sys::sdecay::string;
 
@@ -15,10 +17,10 @@ mod exception;
 pub use exception::CppException;
 
 mod vec;
-use sdecay_sys::sdecay::coincidence_pair_vec;
+use sdecay_sys::sdecay::{coincidence_pair_vec, rad_particle_vec};
 pub use vec::{
     VecChar, VecCoincidencePair, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair,
-    VecTimeEvolutionTerm,
+    VecRadParticle, VecTimeEvolutionTerm, VecTransitionPtr,
 };
 
 mod enums;
@@ -56,6 +58,27 @@ impl_wrapper_shared!(bool);
 impl_wrapper_shared!(usize);
 impl_wrapper_shared!(f32);
 impl_wrapper_shared!(f64);
+
+wrapper! {
+    /// Information representing the nuclear transition (decay channel) for a nuclide
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::Transition => Transition['l] {
+        /// Parent nuclide of the decay
+        pub parent -> parent: *const sdecay_sys::sandia_decay::Nuclide => &'l Nuclide<'l>,
+        /// The resultant nuclide after the decay
+        ///
+        /// May not be present, for example in case of spontaneous fission decay
+        pub child -> child: *const sdecay_sys::sandia_decay::Nuclide => Option<&'l Nuclide<'l>>,
+        /// Decay mode represented by this transition object
+        pub mode -> mode: sdecay_sys::sandia_decay::DecayMode::Type => DecayMode,
+        /// A fraction of times the parent nuclide decays through this decay channel
+        pub branchRatio -> branch_ratio: c_float => f32,
+        /// Particles ($\gamma$, $\beta$, $\alpha$, etc) emitted along this transition
+        pub products -> products: rad_particle_vec => VecRadParticle,
+        @pin: _pin,
+        @no_constr: _no_constr,
+    }
+}
 
 pub use coincidence_pair::CoincidencePair;
 mod coincidence_pair {

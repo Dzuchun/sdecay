@@ -5,10 +5,11 @@ use crate::{
     vec_wrapper,
     wrapper::{
         CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, RadParticle,
-        TimeEvolutionTerm,
+        TimeEvolutionTerm, Transition,
     },
 };
 
+vec_wrapper! { transition_ptr['l], *const sdecay_sys::sandia_decay::Transition, &'l Transition<'l> }
 vec_wrapper! { rad_particle, sdecay_sys::sandia_decay::RadParticle, RadParticle}
 vec_wrapper! {coincidence_pair, sdecay_sys::sdecay::CoincidencePair, CoincidencePair}
 vec_wrapper! { energy_intensity_pair, sdecay_sys::sandia_decay::EnergyIntensityPair, EnergyIntensityPair }
