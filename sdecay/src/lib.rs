@@ -20,6 +20,10 @@ pub mod safety {}
 #[forbid(unsafe_code)]
 pub mod building {}
 
+#[doc = include_str!("../FEATURES.md")]
+#[forbid(unsafe_code)]
+pub mod features {}
+
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
