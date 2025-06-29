@@ -2,9 +2,10 @@
 //!
 //! Unsafe: **YES**
 
-use core::ffi::{c_double, c_float};
+use core::ffi::{c_double, c_float, c_short};
 
 use crate::wrapper;
+
 mod nuclide;
 pub use nuclide::Nuclide;
 
@@ -17,10 +18,13 @@ mod exception;
 pub use exception::CppException;
 
 mod vec;
-use sdecay_sys::sdecay::{coincidence_pair_vec, rad_particle_vec, time_evolution_term_vec};
+use sdecay_sys::sdecay::{
+    coincidence_pair_vec, energy_intensity_pair_vec, nuclide_abundance_pair_vec, rad_particle_vec,
+    time_evolution_term_vec,
+};
 pub use vec::{
     VecChar, VecCoincidencePair, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair,
-    VecRadParticle, VecTimeEvolutionTerm, VecTransitionPtr,
+    VecNuclideAbundancePair, VecRadParticle, VecTimeEvolutionTerm, VecTransitionPtr,
 };
 
 mod enums;
@@ -204,6 +208,31 @@ wrapper! {
         pub energy -> energy: c_double => f64,
         #[expect(missing_docs)]
         pub numPerSecond -> num_per_second: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// Represents a chemical element, consisting of multiple isotopes
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::Element => Element['l] {
+        /// Element's symbol, i.e. `H` for Hyddrogen, `Ar` for Argon, etc
+        pub symbol -> symbol: BindgenString => StdString,
+        /// Element's name, i.e. `Hydrogen` for Hydrogen, `Argon` for Argon, etc
+        pub name -> name: BindgenString => StdString,
+        /// Proton count in the nuclei of this element
+        pub atomicNumber -> atomic_number: c_short => c_short,
+        /// The isotopes which make up the natural abundance of an element
+        ///
+        /// The abundance is the fractional mass of each isotope (e.g. add up to 1.0), it may be the case that abundances are all exactly 0.0 if the element is not naturally occurring
+        pub isotopes -> isotopes: nuclide_abundance_pair_vec => VecNuclideAbundancePair<'l>,
+        /// Xrays that are caused by flouresence (e.g. not xrays produced as a result of a decay) exciting the element.
+        ///
+        /// Intensities are relative to the most intense (1.0) xray, and are only approximations to be used. Energies are only approximate as well
+        ///
+        /// Intended as a rough reference to be used when xrays are wanted without a decay. May not be present if this data wasn't in the XML data file
+        ///
+        /// Their presence can be checked via [`xml_contained_elemental_xray_info`](crate::wrapper::SandiaDecayDataBase::xml_contained_elemental_xray_info)
+        pub xrays -> xrays: energy_intensity_pair_vec => VecEnergyIntensityPair,
     }
 }
 

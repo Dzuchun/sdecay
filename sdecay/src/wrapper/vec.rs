@@ -4,18 +4,24 @@ use crate::{
     container::Container,
     vec_wrapper,
     wrapper::{
-        CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, RadParticle,
-        TimeEvolutionTerm, Transition,
+        CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, Nuclide,
+        NuclideAbundancePair, NuclideTimeEvolution, RadParticle, TimeEvolutionTerm, Transition,
     },
 };
 
 vec_wrapper! { transition_ptr['l], *const sdecay_sys::sandia_decay::Transition, &'l Transition<'l> }
 vec_wrapper! { rad_particle, sdecay_sys::sandia_decay::RadParticle, RadParticle}
 vec_wrapper! {coincidence_pair, sdecay_sys::sdecay::CoincidencePair, CoincidencePair}
+vec_wrapper! { nuclide_abundance_pair['l], sdecay_sys::sandia_decay::NuclideAbundancePair, NuclideAbundancePair<'l> }
 vec_wrapper! { energy_intensity_pair, sdecay_sys::sandia_decay::EnergyIntensityPair, EnergyIntensityPair }
 vec_wrapper! { energy_count_pair, sdecay_sys::sandia_decay::EnergyCountPair, EnergyCountPair }
 vec_wrapper! { energy_rate_pair, sdecay_sys::sandia_decay::EnergyRatePair, EnergyRatePair }
+vec_wrapper! { nuclide_raw_ptr, *const sdecay_sys::sandia_decay::Nuclide, *const sdecay_sys::sandia_decay::Nuclide }
+vec_wrapper! { nuclide_ref['l], *const sdecay_sys::sandia_decay::Nuclide, &'l Nuclide<'l> }
+vec_wrapper! { nuclide['l], sdecay_sys::sandia_decay::Nuclide, Nuclide<'l> }
+vec_wrapper! { transition['l], sdecay_sys::sandia_decay::Transition, Transition<'l> }
 vec_wrapper! { time_evolution_term, sdecay_sys::sandia_decay::TimeEvolutionTerm, TimeEvolutionTerm }
+vec_wrapper! { nuclide_time_evolution['l], sdecay_sys::sandia_decay::NuclideTimeEvolution, NuclideTimeEvolution<'l> }
 
 vec_wrapper! { char, c_char, c_char}
 impl VecChar {
