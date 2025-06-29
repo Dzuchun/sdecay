@@ -61,6 +61,9 @@ pub use nuclide_mixture::LocalMixture;
 pub use nuclide_mixture::Mixture;
 
 #[forbid(unsafe_code)]
+pub mod add_nuclide_spec;
+
+#[forbid(unsafe_code)]
 pub mod element_spec;
 
 #[forbid(unsafe_code)]

@@ -5,6 +5,7 @@
 use core::{fmt::Debug, ops::Deref, pin::Pin};
 
 use crate::{
+    add_nuclide_spec::AddNuclideSpec,
     container::{Container, RefContainer},
     forward_pin_mut_call,
     wrapper::NuclideMixture,
@@ -57,6 +58,14 @@ impl<'l, C: Container<Inner = NuclideMixture<'l>>> GenericMixture<'l, C> {
         self.0.try_inner()
     }
 }
+
+forward_pin_mut_call!({'l, C: Container<Inner = NuclideMixture<'l>>} GenericMixture<'l, C> :
+    /// Adds nuclide to the mixture
+    ///
+    /// Note that this function accepts [`AddNuclideSpec`], see it's doc for list of implementors
+    add_nuclide(
+        spec: impl AddNuclideSpec,
+) -> bool [true;false]);
 
 forward_pin_mut_call!({'l, C: Container<Inner = NuclideMixture<'l>>} GenericMixture<'l, C> :
     /// Clear all the nuclides added to the mixture

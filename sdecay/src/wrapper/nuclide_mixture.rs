@@ -1,11 +1,12 @@
 use core::{fmt::Debug, iter::FusedIterator, mem::MaybeUninit, pin::Pin};
 
 use crate::{
+    add_nuclide_spec::AddNuclideSpec,
     as_cpp_string::AsCppString,
     container::Container,
     impl_moveable,
     nuclide_spec::{NuclideSpec, NumSpec},
-    wrapper::{CppException, Nuclide, NuclideActivityPair, Wrapper},
+    wrapper::{CppException, Nuclide, NuclideActivityPair, NuclideNumAtomsPair, Wrapper},
 };
 
 /// Rust representation of `SandiaDecay`'s nuclide mixture
@@ -90,6 +91,27 @@ impl<'l> NuclideMixture<'l> {
         core::ptr::from_mut(&mut ref_mut.0)
     }
 
+    pub(crate) fn add_nuclide_num_atoms_pair(self: Pin<&mut Self>, pair: &NuclideNumAtomsPair<'_>) {
+        // SAFETY: obtained pointer is only used to add a nuclide into the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        let pair_ptr = pair.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are all live, since pointers were created from references
+        unsafe { sdecay_sys::sandia_decay::NuclideMixture_addNuclide(self_ptr, pair_ptr) };
+    }
+
+    pub(crate) fn add_nuclide_activity_pair(self: Pin<&mut Self>, pair: &NuclideActivityPair<'_>) {
+        // SAFETY: obtained pointer is only used to add a nuclide into the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        let pair_ptr = pair.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are all live, since pointers were created from references
+        unsafe { sdecay_sys::sandia_decay::NuclideMixture_addNuclide1(self_ptr, pair_ptr) };
+    }
     /// Returns the number of nuclides in the mixture at `t = 0`
     #[inline]
     pub fn num_initial_nuclides(&self) -> usize {
@@ -204,6 +226,11 @@ impl<'l> NuclideMixture<'l> {
             let activity = unsafe { self.initial_activity_unchecked(i) };
             NuclideActivityPair { nuclide, activity }
         })
+    }
+
+    #[inline]
+    pub(crate) fn add_nuclide(self: Pin<&mut Self>, spec: impl AddNuclideSpec) {
+        spec.add_nuclide(self);
     }
 
     /// Retrieves [`Nuclide`] activity from the database
