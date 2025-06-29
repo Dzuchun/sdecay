@@ -5,7 +5,10 @@ use core::{
 
 use sdecay_sys::sdecay::transition_ptr_vec;
 
-use crate::wrapper::{BindgenString, StdString, VecTransitionPtr, wrapper};
+use crate::wrapper::{
+    BindgenString, StdString, VecNuclideActivityPair, VecNuclideRef, VecNuclideTimeEvolution,
+    VecTransitionPtr, containers, wrapper,
+};
 
 wrapper! {
     /// NOTE: this documentation is mostly identical to the one in `SandiaDecay`'s header
@@ -65,4 +68,36 @@ impl PartialEq for Nuclide<'_> {
             && self.atomic_mass == other.atomic_mass
             && self.half_life == other.half_life
     }
+}
+
+containers! { Nuclide['l]: sdecay_sys::sdecay::nuclide::descendants =>
+    /// Returns all progeny (descendant) isotopes (child, grand-child, etc.) and not just immediate child nuclides
+    ///
+    /// Results will also include this nuclide.
+    ///
+    /// Results are sorted roughly according to decay chain, but this ordering may not be unique
+    descendants() -> VecNuclideRef['l]
+}
+containers! { Nuclide['l]: sdecay_sys::sdecay::nuclide::forebearers =>
+    /// Returns all isotopes where this nuclide will be in their decay chain (e.g., parent, grandparent, great-grandparent, etc)
+    ///
+    /// Results will also include this nuclide.
+    forebearers() -> VecNuclideRef['l]
+}
+containers! { Nuclide['l]: sdecay_sys::sdecay::nuclide::human_str_summary =>
+    /// A human readable summary
+    human_str_summary() -> StdString
+}
+containers! { Nuclide['l]: sdecay_sys::sdecay::database::decay_single =>
+    /// Decays a single nuclide of specified activity, and returns a list of descendant nuclide activities at the certain time
+    decay(
+        original_activity: f64 => original_activity,
+        time_in_seconds: f64 => time_in_seconds
+    ) -> VecNuclideActivityPair['l]
+}
+containers! { Nuclide['l]: sdecay_sys::sdecay::database::evolution_single =>
+    /// Finds evolution of this and descendant nuclides at specified original activity
+    evolution(
+        original_activity: f64 => original_activity,
+    ) -> VecNuclideTimeEvolution['l]
 }

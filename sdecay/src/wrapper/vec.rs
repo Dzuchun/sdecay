@@ -2,10 +2,11 @@ use core::ffi::c_char;
 
 use crate::{
     container::Container,
-    vec_wrapper,
+    containers, vec_wrapper,
     wrapper::{
         CoincidencePair, Element, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, Nuclide,
-        NuclideAbundancePair, NuclideTimeEvolution, RadParticle, TimeEvolutionTerm, Transition,
+        NuclideAbundancePair, NuclideActivityPair, NuclideTimeEvolution, RadParticle,
+        TimeEvolutionTerm, Transition,
     },
 };
 
@@ -57,4 +58,16 @@ impl VecChar {
     {
         Self::from_bytes_in(C::Allocator::default(), bytes)
     }
+}
+
+vec_wrapper! { nuclide_activity_pair['l], sdecay_sys::sandia_decay::NuclideActivityPair, NuclideActivityPair<'l> }
+containers! { VecNuclideActivityPair['l]: sdecay_sys::sdecay::database::decay_activities =>
+    /// Simulates decay of a nuclide mixture, returning evolved mixture
+    decay(
+        time: f64 => time
+    ) -> VecNuclideActivityPair['l]
+}
+containers! { VecNuclideActivityPair['l]: sdecay_sys::sdecay::database::evolution_activities =>
+    /// Solves for evolution of a nuclide mixture
+    evolution() -> VecNuclideTimeEvolution['l]
 }

@@ -4,7 +4,7 @@
 
 use core::ffi::{c_double, c_float, c_short};
 
-use crate::wrapper;
+use crate::{containers, wrapper};
 
 mod database;
 pub use database::SandiaDecayDataBase;
@@ -30,8 +30,8 @@ use sdecay_sys::sdecay::{
 };
 pub use vec::{
     VecChar, VecCoincidencePair, VecElementRef, VecEnergyCountPair, VecEnergyIntensityPair,
-    VecEnergyRatePair, VecNuclideAbundancePair, VecNuclideRef, VecNuclideTimeEvolution,
-    VecRadParticle, VecTimeEvolutionTerm, VecTransition, VecTransitionPtr,
+    VecEnergyRatePair, VecNuclideAbundancePair, VecNuclideActivityPair, VecNuclideRef,
+    VecNuclideTimeEvolution, VecRadParticle, VecTimeEvolutionTerm, VecTransition, VecTransitionPtr,
 };
 
 mod enums;
@@ -89,6 +89,11 @@ wrapper! {
         @pin: _pin,
         @no_constr: _no_constr,
     }
+}
+
+containers! { Transition['l]: sdecay_sys::sdecay::transition::human_str_summary =>
+    /// A human readable summary
+    human_str_summary () -> StdString
 }
 
 pub use coincidence_pair::CoincidencePair;
@@ -150,6 +155,11 @@ wrapper! {
         @pin: _pin,
         @no_constr: _no_constr,
     }
+}
+
+containers! { RadParticle: sdecay_sys::sdecay::rad_particle::human_str_summary =>
+    /// A human readable summary
+    human_str_summary() -> StdString
 }
 
 wrapper! {
