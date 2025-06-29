@@ -1,0 +1,15 @@
+[package]
+name = "doc-example"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+path = "main.rs"
+name = "doc-example"
+
+[dependencies]
+sdecay = { path = "../../sdecay" }
+
+[lints]
+workspace = true
+

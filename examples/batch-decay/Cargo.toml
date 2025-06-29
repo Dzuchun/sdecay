@@ -1,0 +1,17 @@
+[package]
+name = "example-batch-decay"
+edition = "2024"
+version = "0.1.0"
+publish = false
+
+[[bin]]
+path = "main.rs"
+name = "example-batch-decay"
+
+[dependencies]
+anyhow = "1.0.98"
+clap = { version = "4.5.40", features = ["derive"] }
+sdecay = { path = "../../sdecay" }
+
+[lints]
+workspace = true
