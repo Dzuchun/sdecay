@@ -24,7 +24,9 @@ macro_rules! println {
 //     core::mem::forget(buf);
 // }
 
-const DATABASE_BYTES: &[u8] = include_bytes!("../sandia.decay.xml");
+#[cfg(feature = "alloc")]
+const DATABASE_FILENAME: &str = env!("SANDIA_DATABASE_PATH");
+const DATABASE_BYTES: &[u8] = include_bytes!(env!("SANDIA_DATABASE_PATH"));
 
 mod create_database {
     use super::*;
@@ -67,7 +69,7 @@ mod init {
     #[cfg(feature = "alloc")]
     fn ok_path() {
         let uninit = UninitDatabase::default();
-        let res = uninit.init(c"sandia.decay.xml");
+        let res = uninit.init(DATABASE_FILENAME);
         let database = res.unwrap();
         println!("{database:?}");
     }

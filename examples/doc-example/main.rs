@@ -12,7 +12,8 @@ use sdecay::{
 };
 
 fn main() {
-    let database = Database::from_path("sandia.decay.xml").unwrap();
+    const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+    let database = Database::from_path(DATABASE_PATH).unwrap();
 
     println!("constructing mixture");
     {

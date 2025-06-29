@@ -54,7 +54,7 @@ As an FFI crate, safety is a big concern. See [`safety`] for notes on safety des
 [^2]: Unfortunately, separate allocation has to be performed on C++ side, as [SandiaDecay]'s interface expects `std::vector<char> &`
 
 For example, assuming you have a database (or a symlink to it) in your current directory named `sandia.decay.xml`, here is how you would construct it:
-```rust
+```rust,no_run
 # #[cfg(feature = "alloc")] {
 # use sdecay::Database;
 let database = Database::from_path("sandia.decay.xml").unwrap();
@@ -157,7 +157,8 @@ Let's add $1 \mu \text{Ci}$ of ${}^{40}\text{K}$ to it:
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::NuclideActivityPair, cst::Ci};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let k40 = database.nuclide(nuclide!(k - 40));
 assert!(mixture.add_nuclide(NuclideActivityPair {
@@ -176,7 +177,8 @@ There are other ways to add a nuclide to the mixture:
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::NuclideActivityPair, cst::{Ci, second}};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let rn220 = database.nuclide(nuclide!(Rn - 220));
 mixture
@@ -191,7 +193,8 @@ GenericMixture(BoxContainer(NuclideMixture { Tl208: 2.96e-5 Bq, Pb208: NaN Bq, P
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::NuclideActivityPair, cst::Ci};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let ar42 = database.nuclide(nuclide!(Ar - 42));
 mixture
@@ -206,7 +209,8 @@ GenericMixture(BoxContainer(NuclideMixture { Ar42: 3.70e4 Bq }))
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::NuclideActivityPair, cst::Ci};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let u238 = database.nuclide(nuclide!(U - 238));
 assert!(mixture.add_nuclide_in_prompt_equilibrium(u238, 1e-6 * Ci));
@@ -223,7 +227,8 @@ See [`activities`](crate::wrapper::NuclideMixture::activities_in)
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::NuclideActivityPair, cst::{Ci, hour}};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let rn221 = database.nuclide(nuclide!(Rn - 221));
 assert!(mixture.add_nuclide(NuclideActivityPair {
@@ -256,7 +261,8 @@ For $\gamma$:
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::{NuclideActivityPair, EnergyRatePair, HowToOrder, ProductType}, cst::{Ci, keV, hour}};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let ar42 = database.nuclide(nuclide!(Ar - 42));
 assert!(mixture.add_nuclide(NuclideActivityPair {
@@ -290,7 +296,8 @@ For $e^{-}$:
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::{NuclideActivityPair, EnergyRatePair, HowToOrder, ProductType}, cst::{Ci, keV, hour}};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 # let ar42 = database.nuclide(nuclide!(Ar - 42));
 # assert!(mixture.add_nuclide(NuclideActivityPair {
@@ -325,7 +332,8 @@ For $\tilde{\nu}$:
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::{NuclideActivityPair, EnergyCountPair, HowToOrder, ProductType}, cst::{Ci, keV, day}};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 let c10 = database.nuclide(nuclide!(c - 9));
 assert!(mixture.add_nuclide(NuclideActivityPair {
@@ -356,7 +364,8 @@ For $e^{+}$:
 ```rust
 # #[cfg(feature = "alloc")] {
 # use sdecay::{Database, Mixture, nuclide, wrapper::{NuclideActivityPair, EnergyCountPair, HowToOrder, ProductType}, cst::{Ci, keV, day}};
-# let database = Database::from_path("sandia.decay.xml").unwrap();
+# const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
+# let database = Database::from_path(DATABASE_PATH).unwrap();
 # let mut mixture = Mixture::new();
 # let c10 = database.nuclide(nuclide!(c - 9));
 # assert!(mixture.add_nuclide(NuclideActivityPair {
