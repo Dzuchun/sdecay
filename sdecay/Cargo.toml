@@ -15,6 +15,7 @@ thiserror = { version = "2.0.12", default-features = false }
 # these are proc macros
 nolt = { path = "nolt" }
 paste = "1.0.15"
+pathsep = { version = "0.1" }
 
 [dev-dependencies]
 approx = { version = "0.5.1", default-features = false }

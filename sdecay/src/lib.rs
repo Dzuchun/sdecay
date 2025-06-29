@@ -1,10 +1,13 @@
-#![doc = include_str!("../README.md")]
+#![doc = include_str!(join_path!("..", "README.md"))]
 #![cfg_attr(
     not(test),
     forbid(clippy::undocumented_unsafe_blocks, clippy::missing_safety_doc)
 )]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(all(not(test), not(feature = "std")), no_std)]
+
+#[macro_use]
+extern crate pathsep;
 
 // -- FOLLOWING MODULES DO CONTAIN UNSAFE CODE --
 pub mod wrapper;
@@ -13,15 +16,15 @@ pub mod container;
 
 // -- REST OF THE MODULES ARE MARKED WITH `#[forbid(unsafe)]` --
 
-#[doc = include_str!("../SAFETY.md")]
+#[doc = include_str!(join_path!("..", "SAFETY.md"))]
 #[forbid(unsafe_code)]
 pub mod safety {}
 
-#[doc = include_str!("../../sys/BUILDING.md")]
+#[doc = include_str!(join_path!("..", "BUILDING.md"))]
 #[forbid(unsafe_code)]
 pub mod building {}
 
-#[doc = include_str!("../FEATURES.md")]
+#[doc = include_str!(join_path!("..", "SAFETY.md"))]
 #[forbid(unsafe_code)]
 pub mod features {}
 
