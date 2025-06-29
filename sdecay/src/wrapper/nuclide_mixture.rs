@@ -4,10 +4,11 @@ use crate::{
     add_nuclide_spec::AddNuclideSpec,
     as_cpp_string::AsCppString,
     container::Container,
-    impl_moveable,
+    containers, ffi_unwrap_or, impl_moveable,
     nuclide_spec::{NuclideSpec, NumSpec},
     wrapper::{
-        CppException, Nuclide, NuclideActivityPair, NuclideNumAtomsPair, NuclideTimeEvolution,
+        CppException, HowToOrder, Nuclide, NuclideActivityPair, NuclideNumAtomsPair,
+        NuclideTimeEvolution, ProductType, VecEnergyCountPair, VecEnergyRatePair,
         VecNuclideTimeEvolution, Wrapper,
     },
 };
@@ -764,4 +765,150 @@ impl<'l> NuclideMixture<'l> {
         // - pointed objects are live, since pointers are created from references
         unsafe { sdecay_sys::sandia_decay::NuclideMixture_clear(self_ptr) };
     }
+}
+
+containers! { NuclideMixture['l]: sdecay_sys::sdecay::nuclide_mixture::activity =>
+    /// Returns nuclide activities in the mixture after a certain time
+    activities(time: f64 => time) -> super::VecNuclideActivityPair['l]
+}
+containers! { NuclideMixture['l]: sdecay_sys::sdecay::nuclide_mixture::numAtoms =>
+    /// Returns nuclide atom counts in the mixture after a certain time
+    num_atoms(
+        time: f64 => time,
+    ) -> super::VecNuclideNumAtomsPair['l]
+}
+
+ffi_unwrap_or! { sdecay_sys::sdecay::nuclide_mixture::try_gammas => gammas(
+        mixture: *const NuclideMixture<'l>,
+        time: f64,
+        ordering: HowToOrder,
+        include_annihillations: bool,
+) -> VecEnergyRatePair ?? out -> {
+    // SAFETY: `out` points to properly allocated, but uninitialized memory (function invariant)
+    unsafe { sdecay_sys::sdecay::std_vector_energy_rate_pair_new(out); }
+} }
+
+containers! { NuclideMixture['l]: gammas =>
+    /// Returns $\gamma$ line intensities emitted by the mixture after a certain time
+    ///
+    /// Note, that $\gamma$ here refers to high-energy photons (originating from nuclei transitions)
+    gammas (
+        time: f64 => time,
+        ordering: HowToOrder => ordering.0,
+        include_annihillations: bool => include_annihillations,
+    ) -> VecEnergyRatePair
+}
+
+ffi_unwrap_or! { sdecay_sys::sdecay::nuclide_mixture::try_xrays => xrays(
+        mixture: *const NuclideMixture<'l>,
+        time: f64,
+        ordering: HowToOrder,
+) -> VecEnergyRatePair ?? out -> {
+    // SAFETY: `out` points to properly allocated, but uninitialized memory (function invariant)
+    unsafe { sdecay_sys::sdecay::std_vector_energy_rate_pair_new(out); }
+} }
+
+containers! { NuclideMixture['l]: xrays =>
+    /// Returns x-ray line intensities emitted by the mixture after a certain time
+    ///
+    /// Note, that x-ray here refers to photons produced by atomic shell processes (below couple keV)
+    xrays(
+        time: f64 => time,
+        ordering: HowToOrder => ordering.0,
+    ) -> VecEnergyRatePair
+}
+
+ffi_unwrap_or! { sdecay_sys::sdecay::nuclide_mixture::try_photons => photons(
+        mixture: *const NuclideMixture<'l>,
+        time: f64,
+        ordering: HowToOrder,
+) -> VecEnergyRatePair ?? out -> {
+    // SAFETY: `out` points to properly allocated, but uninitialized memory (function invariant)
+    unsafe { sdecay_sys::sdecay::std_vector_energy_rate_pair_new(out); }
+} }
+
+containers! { NuclideMixture['l]: photons =>
+    /// Returns all the photon line intensities emitted by the mixture after a certain time
+    ///
+    /// Note, that this includes all of the photons ($\gamma$ and x-ray)
+    photons(
+        time: f64 => time,
+        ordering: HowToOrder => ordering.0,
+    ) -> VecEnergyRatePair
+}
+
+ffi_unwrap_or! { sdecay_sys::sdecay::nuclide_mixture::try_decayParticle => decay_particle(
+        mixture: *const NuclideMixture<'l>,
+        time: f64,
+        r#type: ProductType,
+        ordering: HowToOrder,
+) -> VecEnergyRatePair ?? out -> {
+    // SAFETY: `out` points to properly allocated, but uninitialized memory (function invariant)
+    unsafe { sdecay_sys::sdecay::std_vector_energy_rate_pair_new(out); }
+} }
+
+containers! { NuclideMixture['l]: decay_particle =>
+    /// Returns energies and intensities of certain particle type produced by the mixture after some time
+    decay_particle(
+        time: f64 => time,
+        r#type: ProductType => r#type.0,
+        ordering: HowToOrder => ordering.0,
+    ) -> VecEnergyRatePair
+}
+
+ffi_unwrap_or! { sdecay_sys::sdecay::nuclide_mixture::try_decayParticlesInInterval => decay_particles_in_interval(
+        mixture: *const NuclideMixture<'l>,
+        initial_age: f64,
+        interval_duration: f64,
+        r#type: ProductType,
+        ordering: HowToOrder,
+        characteristic_time_slices: usize,
+) -> VecEnergyCountPair ?? out -> {
+    // SAFETY: `out` points to properly allocated, but uninitialized memory (function invariant)
+    unsafe { sdecay_sys::sdecay::std_vector_energy_count_pair_new(out); }
+} }
+
+containers! { NuclideMixture['l]: decay_particles_in_interval =>
+    /// NOTE: this documentation is mostly identical to the one in `SandiaDecay`'s header
+    ///
+    /// Calculates the number of expected particles (and their energies), for a given time interval, accounting for decay during the interval
+    ///
+    /// A simple integration over the interval, at fixed time steps, is used to estimate the total number of particles expected in the interval. It is a naive, and not particularly optimized algorithm, but checks out well against analytical answer, for the cases that are available
+    ///
+    /// ### Parameters
+    /// - `initial_age`: The initial age, in seconds, of the mixture, at time of interval (this is relative to the mixture's T=0 time). E.g., the samples age at the start of the measurement
+    /// - `interval_duration`: The duration, in seconds, of the interval. E.g. how long the measurement is
+    /// - `type`: The particle type you are interested in
+    /// - `sort_type`: How to order the returned answer
+    /// - `characteristic_time_slices`: Used to calculate number of time slices for integration
+    ///
+    /// The delta time step will be the minimum of the parent nuclide half-lives, or the interval time span, divided by this number. Then the number of times steps will be clamped between 50 and 2000.
+    decay_particles_in_interval(
+        initial_age: f64 => initial_age,
+        interval_duration: f64 => interval_duration,
+        r#type: ProductType => r#type.0,
+        ordering: HowToOrder => ordering.0,
+        characteristic_time_slices: usize => characteristic_time_slices,
+    ) -> VecEnergyCountPair
+}
+
+ffi_unwrap_or! { sdecay_sys::sdecay::nuclide_mixture::try_decayPhotonsInInterval => decay_photons_in_interval(
+        mixture: *const NuclideMixture<'l>,
+        initial_age: f64,
+        interval_duration: f64,
+        ordering: HowToOrder,
+        characteristic_time_slices: usize,
+) -> VecEnergyCountPair ?? out -> {
+    // SAFETY: `out` points to properly allocated, but uninitialized memory (function invariant)
+    unsafe { sdecay_sys::sdecay::std_vector_energy_count_pair_new(out); }
+} }
+
+containers! { NuclideMixture['l]: decay_photons_in_interval =>
+    /// Same as [`Self::decay_particles_in_interval`], but with [`ProductType::GammaParticle`] and [`ProductType::XrayParticle`]
+    decay_photons_in_interval(
+        initial_age: f64 => initial_age,
+        interval_duration: f64 => interval_duration,
+        ordering: HowToOrder => ordering.0,
+        characteristic_time_slices: usize => characteristic_time_slices,
+    ) -> VecEnergyCountPair
 }

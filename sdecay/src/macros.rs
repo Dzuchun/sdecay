@@ -540,3 +540,39 @@ macro_rules! forward_pin_mut_call {
     };
 }
 pub(crate) use forward_pin_mut_call;
+
+macro_rules! ffi_unwrap_or {
+    ($cname:path => $name:ident ( $($arg:ident: $argt:ty),*$(,)? ) -> $rtype:ident $(<$l:lifetime>)? ?? $out:ident -> $default_expr:block) => {
+        #[doc = concat!("### Safety\n- `out` must point to properly allocated but uninitialized memory (will be overwritten, with no drop logic)\n- rest of the arguments must adhere to ", stringify!($cname),"'s invariants")]
+        unsafe fn $name (
+            out: *mut <nolt::nolt!($rtype $(<$l>)?) as crate::wrapper::Wrapper>::CSide,
+            $($arg: <nolt::nolt!($argt) as crate::wrapper::Wrapper>::CSide,)*
+        ) {
+            let mut error = MaybeUninit::<CppException>::uninit();
+            let error_ptr = error.as_mut_ptr().cast::<sdecay_sys::sdecay::Exception>();
+            // SAFETY: ffi call with
+            // - statically validated type representations
+            // - correct pointer constness (as of bindgen, that is)
+            // - `out` points to uninitialized memory (function invariant)
+            // - `error_ptr` points to uninitialized memory by construction
+            let tag = unsafe {
+                $cname(
+                    out,
+                    error_ptr,
+                    $($arg,)*
+                )
+            };
+            if tag {
+                // already written output
+            } else {
+                // drop the error
+                // SAFETY: `tag == false` guarantees that exception occurred and written to `exception`
+                unsafe { error.assume_init_drop() };
+                // initialize default
+                let $out = out;
+                $default_expr;
+            }
+        }
+    };
+}
+pub(crate) use ffi_unwrap_or;
