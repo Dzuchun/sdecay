@@ -3,6 +3,7 @@
     not(test),
     forbid(clippy::undocumented_unsafe_blocks, clippy::missing_safety_doc)
 )]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(all(not(test), not(feature = "std")), no_std)]
 
 // -- FOLLOWING MODULES DO CONTAIN UNSAFE CODE --

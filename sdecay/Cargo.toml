@@ -3,6 +3,9 @@ name = "sdecay"
 version = "0.1.0"
 edition = "2024"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [package.metadata.cargo-all-features]
 denylist = [ "git" ] # don't try enabling git feature
 
