@@ -1,2 +1,5 @@
 # cargo build artifacts
 target
+
+# local config
+.cargo
