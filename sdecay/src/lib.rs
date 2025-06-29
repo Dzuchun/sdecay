@@ -16,6 +16,10 @@ pub mod container;
 #[forbid(unsafe_code)]
 pub mod safety {}
 
+#[doc = include_str!("../../sys/BUILDING.md")]
+#[forbid(unsafe_code)]
+pub mod building {}
+
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
