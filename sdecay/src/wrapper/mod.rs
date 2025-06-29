@@ -9,6 +9,9 @@ use crate::wrapper;
 mod database;
 pub use database::SandiaDecayDataBase;
 
+mod nuclide_mixture;
+pub use nuclide_mixture::NuclideMixture;
+
 mod nuclide;
 pub use nuclide::Nuclide;
 
@@ -27,8 +30,8 @@ use sdecay_sys::sdecay::{
 };
 pub use vec::{
     VecChar, VecCoincidencePair, VecElementRef, VecEnergyCountPair, VecEnergyIntensityPair,
-    VecEnergyRatePair, VecNuclideAbundancePair, VecNuclideRef, VecRadParticle,
-    VecTimeEvolutionTerm, VecTransition, VecTransitionPtr,
+    VecEnergyRatePair, VecNuclideAbundancePair, VecNuclideRef, VecNuclideTimeEvolution,
+    VecRadParticle, VecTimeEvolutionTerm, VecTransition, VecTransitionPtr,
 };
 
 mod enums;

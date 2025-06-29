@@ -55,6 +55,12 @@ pub use database::{Database, SharedDatabase, UninitDatabase, UninitSharedDatabas
 pub use database::{LocalDatabase, UninitLocalDatabase};
 
 #[forbid(unsafe_code)]
+pub mod nuclide_mixture;
+pub use nuclide_mixture::LocalMixture;
+#[cfg(feature = "alloc")]
+pub use nuclide_mixture::Mixture;
+
+#[forbid(unsafe_code)]
 pub mod element_spec;
 
 #[forbid(unsafe_code)]
