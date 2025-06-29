@@ -431,3 +431,23 @@ macro_rules! impl_moveable {
     };
 }
 pub(crate) use impl_moveable;
+
+macro_rules! forward_pin_mut_call {
+    ($({$($gargs:tt)+})? $this:ty : $(#[$($attr:tt)+])* $name:ident $(<$($fargs:tt)+>)? (
+        $($arg:ident: $argt:ty),*$(,)?
+    ) -> $ret:ty [$($ok_expr:expr $(, $res:ident)?)?; $($err_expr:expr)?]) => {
+        impl $(<$($gargs)+>)? $this {
+            $(#[$($attr)+])*
+            #[inline]
+            pub fn $name $(<$($fargs)+>)? (&mut self, $($arg: $argt),*) -> $ret {
+                if let Some(pin) = self.inner_mut() {
+                    $($(let $res = )?)? pin.$name($($arg),*);
+                    $($ok_expr)?
+                } else {
+                    $($err_expr)?
+                }
+            }
+        }
+    };
+}
+pub(crate) use forward_pin_mut_call;

@@ -2,10 +2,11 @@
 //!
 //! Unsafe: no
 
-use core::{fmt::Debug, ops::Deref};
+use core::{fmt::Debug, ops::Deref, pin::Pin};
 
 use crate::{
     container::{Container, RefContainer},
+    forward_pin_mut_call,
     wrapper::NuclideMixture,
 };
 
@@ -50,4 +51,13 @@ impl<'l, C: Container<Inner = NuclideMixture<'l>>> GenericMixture<'l, C> {
     {
         Self::new_in(C::Allocator::default())
     }
+
+    #[inline]
+    fn inner_mut(&mut self) -> Option<Pin<&mut NuclideMixture<'l>>> {
+        self.0.try_inner()
+    }
 }
+
+forward_pin_mut_call!({'l, C: Container<Inner = NuclideMixture<'l>>} GenericMixture<'l, C> :
+    /// Clear all the nuclides added to the mixture
+    clear() -> bool [true;false]);

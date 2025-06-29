@@ -1,4 +1,4 @@
-use core::{fmt::Debug, iter::FusedIterator, mem::MaybeUninit};
+use core::{fmt::Debug, iter::FusedIterator, mem::MaybeUninit, pin::Pin};
 
 use crate::{
     as_cpp_string::AsCppString,
@@ -77,6 +77,17 @@ impl<'l> NuclideMixture<'l> {
     #[inline]
     fn ptr(&self) -> *const sdecay_sys::sandia_decay::NuclideMixture {
         core::ptr::from_ref(&self.0)
+    }
+
+    /// ### Safety
+    /// Obtained pointer should not be used to move out the object
+    #[inline]
+    unsafe fn ptr_mut(self: Pin<&mut Self>) -> *mut sdecay_sys::sandia_decay::NuclideMixture {
+        // SAFETY:
+        // - reference will only be used to create a pointer
+        // - pointer will not be used to move out of the value (function invariant)
+        let ref_mut = unsafe { Pin::into_inner_unchecked(self) };
+        core::ptr::from_mut(&mut ref_mut.0)
     }
 
     /// Returns the number of nuclides in the mixture at `t = 0`
@@ -394,5 +405,15 @@ impl<'l> NuclideMixture<'l> {
                 None
             }
         })
+    }
+
+    pub(crate) fn clear(self: Pin<&mut Self>) {
+        // SAFETY: obtained pointer is only used to clear the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are live, since pointers are created from references
+        unsafe { sdecay_sys::sandia_decay::NuclideMixture_clear(self_ptr) };
     }
 }
