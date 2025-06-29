@@ -6,6 +6,9 @@ resolver = "3"
 rust_2018_idioms = { level = "deny", priority = -1 }
 missing_debug_implementations = "deny"
 missing_docs = "deny"
+unreachable_pub = "deny"
+pub_use_of_private_extern_crate = "deny"
+unnameable_types = "deny"
 
 [workspace.lints.rustdoc]
 broken_intra_doc_links = "forbid"

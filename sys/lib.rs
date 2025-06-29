@@ -7,6 +7,8 @@ mod ffi {
         missing_docs,
         missing_debug_implementations,
         unsafe_op_in_unsafe_fn,
+        unnameable_types,
+        unreachable_pub,
         clippy::pub_underscore_fields,
         clippy::unreadable_literal,
         clippy::missing_safety_doc,

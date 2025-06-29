@@ -18,7 +18,7 @@ struct ArcInner<T> {
 }
 
 // NOTE: container pointer is **usually non-null**, but will be nullptr if the struct was moved out of
-pub struct Arc<T>(*mut ArcInner<T>);
+pub(super) struct Arc<T>(*mut ArcInner<T>);
 
 // SAFETY: clone and drop logic are implemented with proper atomic checks
 unsafe impl<T: Send + Sync> Send for Arc<T> {}
@@ -56,7 +56,7 @@ impl<T> Clone for Arc<T> {
 
 impl<T> Arc<MaybeUninit<T>> {
     #[inline]
-    pub fn uninit() -> Self {
+    pub(super) fn uninit() -> Self {
         let inner = Box::new(ArcInner {
             count: AtomicUsize::new(1),
             data: MaybeUninit::uninit(),
@@ -66,7 +66,7 @@ impl<T> Arc<MaybeUninit<T>> {
     }
 
     #[inline]
-    pub unsafe fn assume_init(mut self) -> Arc<T> {
+    pub(super) unsafe fn assume_init(mut self) -> Arc<T> {
         let uptr = core::mem::replace(&mut self.0, core::ptr::null_mut());
         drop(self);
         let ptr = uptr.cast::<ArcInner<T>>();
@@ -92,17 +92,17 @@ impl<T> Arc<T> {
     }
 
     #[inline]
-    pub fn count(this: &Self) -> usize {
+    pub(super) fn count(this: &Self) -> usize {
         this.inner().count.load(Ordering::Acquire)
     }
 
     #[inline]
-    pub fn is_unique(&self) -> bool {
+    pub(super) fn is_unique(&self) -> bool {
         Self::count(self) == 1
     }
 
     #[inline]
-    pub fn get_mut(&mut self) -> Option<&mut T> {
+    pub(super) fn get_mut(&mut self) -> Option<&mut T> {
         self.is_unique().then(|| {
             // SAFETY: unique access ensured by the check above
             unsafe { self.get_mut_unchecked() }
@@ -112,13 +112,13 @@ impl<T> Arc<T> {
     /// ### Safety
     /// Should only be called if current [`Arc`] has unique access to the data
     #[inline]
-    pub unsafe fn get_mut_unchecked(&mut self) -> &mut T {
+    pub(super) unsafe fn get_mut_unchecked(&mut self) -> &mut T {
         // SAFETY: (function invariant)
         &mut unsafe { &mut *self.ptr_mut() }.data
     }
 
     #[inline]
-    pub fn try_move_out<O>(mut self, op: impl FnOnce(*mut T) -> O) -> Option<O> {
+    pub(super) fn try_move_out<O>(mut self, op: impl FnOnce(*mut T) -> O) -> Option<O> {
         // leave nullptr behind, so that actual drop won't double-free
         let ptr = core::mem::replace(&mut self.0, core::ptr::null_mut());
         drop(self);
