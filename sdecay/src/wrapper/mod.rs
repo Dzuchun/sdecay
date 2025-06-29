@@ -17,7 +17,7 @@ mod exception;
 pub use exception::CppException;
 
 mod vec;
-use sdecay_sys::sdecay::{coincidence_pair_vec, rad_particle_vec};
+use sdecay_sys::sdecay::{coincidence_pair_vec, rad_particle_vec, time_evolution_term_vec};
 pub use vec::{
     VecChar, VecCoincidencePair, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair,
     VecRadParticle, VecTimeEvolutionTerm, VecTransitionPtr,
@@ -142,6 +142,39 @@ wrapper! {
 }
 
 wrapper! {
+    /// Holds the information about abundance (by mass) of a specific [`Nuclide`] in a [`crate::Mixture`], material, or [`Element`]
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::NuclideAbundancePair => NuclideAbundancePair['l] {
+        #[expect(missing_docs)]
+        pub nuclide -> nuclide: *const sdecay_sys::sandia_decay::Nuclide => &'l Nuclide<'l>,
+        /// A fraction of this nuclide by mass
+        pub abundance -> abundance: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// Holds the activity of a specific [`Nuclide`] in a [`crate::Mixture`], material, or [`Element`]
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::NuclideActivityPair => NuclideActivityPair['l] {
+        #[expect(missing_docs)]
+        pub nuclide -> nuclide: *const sdecay_sys::sandia_decay::Nuclide => &'l Nuclide<'l>,
+        /// Activity, in `SandiaDecay`'s units
+        pub activity -> activity: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// Holds the number of atoms of a specific [`Nuclide`] in a [`crate::Mixture`], material, or [`Element`]
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::NuclideNumAtomsPair => NuclideNumAtomsPair['l] {
+        #[expect(missing_docs)]
+        pub nuclide -> nuclide: *const sdecay_sys::sandia_decay::Nuclide => &'l Nuclide<'l>,
+        #[expect(missing_docs)]
+        pub numAtoms -> num_atoms: c_double => f64,
+    }
+}
+
+wrapper! {
     /// Used to express the relative (to the number of decays) intensities of a specific-energy decay particles, e.g., specify what fraction of decay event will have a gamma of a certain energy
     #[derive(Debug)]
     sdecay_sys::sandia_decay::EnergyIntensityPair => EnergyIntensityPair {
@@ -186,5 +219,17 @@ wrapper! {
         pub termCoeff -> term_coeff: c_double => f64,
         #[expect(missing_docs)]
         pub exponentialCoeff -> exponential_coeff: c_double => f64,
+    }
+}
+
+wrapper! {
+    /// TODO: check is my understanding is actually correct
+    /// A nuclide evolution solution, comprised a several [`TimeEvolutionTerm`]s added together
+    #[derive(Debug)]
+    sdecay_sys::sandia_decay::NuclideTimeEvolution => NuclideTimeEvolution['l] {
+        #[expect(missing_docs)]
+        pub nuclide -> nuclide: *const sdecay_sys::sandia_decay::Nuclide => &'l Nuclide<'l>,
+        #[expect(missing_docs)]
+        pub evolutionTerms -> evolution_terms: time_evolution_term_vec => VecTimeEvolutionTerm,
     }
 }
