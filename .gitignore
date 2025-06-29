@@ -3,3 +3,8 @@ target
 
 # local config
 .cargo
+
+# local act files
+.secrets
+.actrc
+act_event.json
