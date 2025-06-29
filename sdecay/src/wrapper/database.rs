@@ -5,6 +5,7 @@ use crate::{
     container::{Container, ExclusiveContainer, RefContainer},
     element_spec::ElementSpec,
     impl_moveable,
+    nuclide_spec::NuclideSpec,
     wrapper::{
         CppException, Element, Nuclide, Transition, VecChar, VecElementRef, VecNuclideRef,
         VecTransition,
@@ -298,6 +299,37 @@ impl SandiaDecayDataBase {
             unsafe { Element::from_ptr(ptr) }
         })
     }
+
+    pub(crate) fn nuclide_by_name(&self, name: impl AsCppString) -> Option<&Nuclide<'_>> {
+        name.with_cpp_string(|name| {
+            let self_ptr = self.ptr();
+            let name_ptr = name.ptr();
+            // SAFETY: ffi call with
+            // - statically validated type representations
+            // - correct pointer constness (as of bindgen, that is)
+            // - pointed objects are live, since pointers were created from references
+            let ptr = unsafe {
+                sdecay_sys::sandia_decay::SandiaDecayDataBase_nuclide(self_ptr, name_ptr)
+            };
+            // SAFETY: SandiaDecay returns a pointer to a valid `Nuclide` or a null pointer
+            unsafe { Nuclide::from_ptr(ptr) }
+        })
+    }
+
+    pub(crate) fn nuclide_by_num(
+        &self,
+        z: i32,
+        mass_number: i32,
+        iso: i32,
+    ) -> Option<&Nuclide<'_>> {
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are live, since pointers are created from references
+        let ptr = unsafe { self.0.nuclide1(z, mass_number, iso) };
+        // SAFETY: SandiaDecay returns a pointer to a valid `Nuclide` or a null pointer
+        unsafe { Nuclide::from_ptr(ptr) }
+    }
 }
 
 impl core::fmt::Debug for SandiaDecayDataBase {
@@ -308,6 +340,77 @@ impl core::fmt::Debug for SandiaDecayDataBase {
 }
 
 impl SandiaDecayDataBase {
+    /// Retrieves [`Nuclide`] from the database, if present
+    ///
+    /// Note, that [`Nuclide`] is described as [`NuclideSpec`], see it's doc to find the best description for you
+    ///
+    /// ### Example
+    /// ```rust
+    /// # #[cfg(feature = "std")] {
+    /// # use sdecay::database::Database;
+    /// let database = Database::from_env().unwrap();
+    /// # use sdecay::nuclide;
+    /// // using `NumSpec` (created through `nuclide` macro)
+    /// let tritium = database.try_nuclide(nuclide!(H-3)).unwrap();
+    /// // (nucleus mass can be stored in a variable)
+    /// let famous_mass = 56;
+    /// let fe_56 = database.try_nuclide(nuclide!(fe-famous_mass)).unwrap();
+    /// // note, that non-existing elements cannot be described via `nuclide` macro:
+    /// // database.try_nuclide(nuclide!(Mi-348)).unwrap_err(); // no Mimicium :(
+    /// // you can try doing that manually:
+    /// # use sdecay::nuclide_spec::NumSpec;
+    /// assert!(database.try_nuclide(NumSpec { z: 152, mass_number: 348, iso: None }).is_none()); // is this Mimicium? maybe?
+    ///
+    /// // using str
+    /// assert!(database.try_nuclide("Dr-358").is_none()); // no draconium :(
+    /// // using cstr
+    /// let tungsten_184 = database.try_nuclide(c"W-184").unwrap();
+    /// // using bytes
+    /// assert!(database.try_nuclide(b"C-5").is_none()); // no carbon 5 (they must hide it really well!)
+    /// // using other text types
+    /// let uranium_235 = database.try_nuclide("U-235".to_string()).unwrap();
+    /// # }
+    /// ```
+    #[inline]
+    pub fn try_nuclide(&self, spec: impl NuclideSpec) -> Option<&Nuclide<'_>> {
+        spec.get_nuclide(self)
+    }
+
+    /// Retrieves [`Nuclide`] from the database
+    ///
+    /// Note, that [`Nuclide`] is described as [`NuclideSpec`], see it's doc to find the best description for you
+    ///
+    /// ### Panics
+    /// If described [`Nuclide`] is not present in the database
+    ///
+    /// ### Example
+    /// ```rust
+    /// # #[cfg(feature = "std")] {
+    /// # use sdecay::database::Database;
+    /// let database = Database::from_env().unwrap();
+    /// # use sdecay::nuclide;
+    /// // using `NumSpec` (created through `nuclide` macro)
+    /// let tritium = database.nuclide(nuclide!(H-3));
+    /// // (nucleus mass can be stored in a variable)
+    /// let famous_mass = 56;
+    /// let fe_56 = database.nuclide(nuclide!(fe-famous_mass));
+    ///
+    /// // using str
+    /// // database.nuclide("Dr-358"); // (panics) no draconium :(
+    /// // using cstr
+    /// let tungsten_184 = database.nuclide(c"W-184");
+    /// // using bytes
+    /// // database.nuclide(b"C-5"); // (panics) no carbon 5 (they must hide it really well!)
+    /// // using other text types
+    /// let uranium_235 = database.nuclide("U-235".to_string());
+    /// # }
+    /// ```
+    #[inline]
+    pub fn nuclide(&self, spec: impl NuclideSpec) -> &Nuclide<'_> {
+        spec.get_nuclide(self)
+            .expect("Nuclide is not present in the database")
+    }
+
     /// Retrieves [`Element`] from the database, if present
     ///
     /// Note, that [`Element`] is described as [`ElementSpec`], see it's doc to find the best description for you

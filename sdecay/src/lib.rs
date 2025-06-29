@@ -58,4 +58,7 @@ pub use database::{LocalDatabase, UninitLocalDatabase};
 pub mod element_spec;
 
 #[forbid(unsafe_code)]
+pub mod nuclide_spec;
+
+#[forbid(unsafe_code)]
 pub mod as_cpp_string;
