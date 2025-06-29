@@ -1,4 +1,4 @@
 [submodule "sys/vendor"]
-    path = sys/vendor
+    path = vendor
     url = https://github.com/sandialabs/SandiaDecay.git
     branch = cd75314b56e12b80497531a1fbeed9c8e9968403
