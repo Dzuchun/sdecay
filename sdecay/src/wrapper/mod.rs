@@ -16,7 +16,8 @@ pub use exception::CppException;
 
 mod vec;
 pub use vec::{
-    VecChar, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair, VecTimeEvolutionTerm,
+    VecChar, VecCoincidencePair, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair,
+    VecTimeEvolutionTerm,
 };
 
 mod enums;
@@ -54,6 +55,31 @@ impl_wrapper_shared!(bool);
 impl_wrapper_shared!(usize);
 impl_wrapper_shared!(f32);
 impl_wrapper_shared!(f64);
+
+pub use coincidence_pair::CoincidencePair;
+mod coincidence_pair {
+    use core::ffi::c_ushort;
+
+    /// I have NO idea what this pair means
+    ///
+    /// In case you happen to know, here it is -- easily accessible as Rust tuple
+    #[derive(Debug)]
+    #[repr(C)]
+    pub struct CoincidencePair(pub c_ushort, pub f32);
+
+    // assert same size and alignment
+    const _: () = const {
+        use core::mem::{align_of, size_of};
+        assert!(size_of::<CoincidencePair>() == size_of::<sdecay_sys::sdecay::CoincidencePair>());
+        assert!(align_of::<CoincidencePair>() == align_of::<sdecay_sys::sdecay::CoincidencePair>());
+    };
+
+    const _: () = const {
+        use core::mem::{align_of, size_of};
+        assert!(size_of::<f32>() == size_of::<core::ffi::c_float>());
+        assert!(align_of::<f32>() == align_of::<core::ffi::c_float>());
+    };
+}
 
 wrapper! {
     /// Used to express the relative (to the number of decays) intensities of a specific-energy decay particles, e.g., specify what fraction of decay event will have a gamma of a certain energy

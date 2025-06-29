@@ -3,9 +3,12 @@ use core::ffi::c_char;
 use crate::{
     container::Container,
     vec_wrapper,
-    wrapper::{EnergyCountPair, EnergyIntensityPair, EnergyRatePair, TimeEvolutionTerm},
+    wrapper::{
+        CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, TimeEvolutionTerm,
+    },
 };
 
+vec_wrapper! {coincidence_pair, sdecay_sys::sdecay::CoincidencePair, CoincidencePair}
 vec_wrapper! { energy_intensity_pair, sdecay_sys::sandia_decay::EnergyIntensityPair, EnergyIntensityPair }
 vec_wrapper! { energy_count_pair, sdecay_sys::sandia_decay::EnergyCountPair, EnergyCountPair }
 vec_wrapper! { energy_rate_pair, sdecay_sys::sandia_decay::EnergyRatePair, EnergyRatePair }
