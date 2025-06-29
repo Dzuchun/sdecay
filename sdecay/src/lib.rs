@@ -73,3 +73,6 @@ pub mod nuclide_spec;
 
 #[forbid(unsafe_code)]
 pub mod as_cpp_string;
+
+#[cfg(test)]
+mod tests;

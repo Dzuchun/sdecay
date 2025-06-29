@@ -13,6 +13,9 @@ thiserror = { version = "2.0.12", default-features = false }
 nolt = { path = "nolt" }
 paste = "1.0.15"
 
+[dev-dependencies]
+approx = { version = "0.5.1", default-features = false }
+
 [features]
 # default = []
 default = ["std"]
