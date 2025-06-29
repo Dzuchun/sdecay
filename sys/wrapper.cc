@@ -503,7 +503,7 @@ TRY_CALL_DEF(addAgedNuclideByNumAtoms, Unit,
 namespace transition {
 
 // (this method is non-standand)
-void human_str_summary(const SandiaDecay::Transition *trans, std::string *out) {
+void human_str_summary(std::string *out, const SandiaDecay::Transition *trans) {
     auto res = SandiaDecay::human_str_summary(*trans);
     write(out, res);
 }
@@ -513,8 +513,8 @@ void human_str_summary(const SandiaDecay::Transition *trans, std::string *out) {
 namespace rad_particle {
 
 // (this method is non-standand)
-void human_str_summary(const SandiaDecay::RadParticle *rad_particle,
-                       std::string *out) {
+void human_str_summary(std::string *out,
+                       const SandiaDecay::RadParticle *rad_particle) {
     auto res = SandiaDecay::human_str_summary(*rad_particle);
     write(out, res);
 }
