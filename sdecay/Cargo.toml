@@ -8,6 +8,7 @@ all-features = true
 
 [package.metadata.cargo-all-features]
 denylist = [ "git" ] # don't try enabling git feature
+always_include_features = [ "embed", "embed-min", "embed-nocoinc-min" ]
 
 [dependencies]
 sdecay-sys = { path = "../sys" }
@@ -26,6 +27,9 @@ default = ["std"]
 std = ["alloc"]
 alloc = []
 git = ["sdecay-sys/git"]
+embed = ["sdecay-sys/embed"]
+embed-min = ["sdecay-sys/embed-min"]
+embed-nocoinc-min = ["sdecay-sys/embed-nocoinc-min"]
 
 [lints]
 workspace = true

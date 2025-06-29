@@ -32,5 +32,45 @@ pub mod sdecay {
     pub use crate::ffi::root::std::string;
 }
 
+/// Provided databases as included byte blobs
+#[cfg(any(
+    feature = "embed",
+    feature = "embed-min",
+    feature = "embed-nocoinc-min"
+))]
+pub mod database {
+    use pathsep::{join_path, path_separator};
+
+    /// "Default" database provided by `SandiaDecay`
+    ///
+    /// Size: about 30MiB
+    #[cfg(feature = "embed")]
+    pub const DATABASE: &[u8] = include_bytes!(pathsep::join_path!(
+        env!("CARGO_MANIFEST_DIR"),
+        "vendor",
+        "sandia.decay.xml"
+    ));
+
+    /// "Min" database provided by `SandiaDecay`
+    ///
+    /// Size: about 16MiB
+    #[cfg(feature = "embed-min")]
+    pub const DATABASE_MIN: &[u8] = include_bytes!(join_path!(
+        env!("CARGO_MANIFEST_DIR"),
+        "vendor",
+        "sandia.decay.min.xml"
+    ));
+
+    /// "Nocoinc-min" database provided by `SandiaDecay`
+    ///
+    /// Size: about 6MiB
+    #[cfg(feature = "embed-nocoinc-min")]
+    pub const DATABASE_NOCOINC_MIN: &[u8] = include_bytes!(join_path!(
+        env!("CARGO_MANIFEST_DIR"),
+        "vendor",
+        "sandia.decay.nocoinc.min.xml"
+    ));
+}
+
 #[cfg(test)]
 mod tests;

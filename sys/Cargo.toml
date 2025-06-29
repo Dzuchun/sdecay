@@ -4,15 +4,24 @@ version = "0.1.0"
 edition = "2024"
 links = "SandiaDecay"
 
+[package.metadata.cargo-all-features]
+always_include_features = ["embed", "embed-min", "embed-nocoinc-min"]
+
 [lib]
 path = "lib.rs"
 
 [build-dependencies]
 cc = "1.2.27"
 
+[dependencies]
+pathsep = { version = "0.1", optional = true }
+
 [features]
 default = []
 git = []
+embed = ["dep:pathsep"]
+embed-min = ["dep:pathsep"]
+embed-nocoinc-min = ["dep:pathsep"]
 
 [lints]
 workspace = true

@@ -172,6 +172,59 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericUninitDatabase<C> {
     }
 }
 
+impl<C: Container<Inner = SandiaDecayDataBase>> GenericUninitDatabase<C> {
+    /// Creates initialized database from embedded "default" database
+    ///
+    /// ### Example
+    /// Using [`crate::container::BoxContainer`] for storage:
+    /// ```rust
+    /// # #[cfg(feature = "alloc")] {
+    /// # use sdecay::database::UninitDatabase;
+    /// let database = UninitDatabase::new().init_embedded();
+    /// # }
+    /// ```
+    #[cfg(feature = "embed")]
+    #[inline]
+    pub fn init_embedded(self) -> GenericDatabase<C> {
+        self.init_bytes(sdecay_sys::database::DATABASE)
+            .expect("Embedded database should be valid")
+    }
+
+    /// Creates initialized database from embedded "min" database
+    ///
+    /// ### Example
+    /// Using [`crate::container::BoxContainer`] for storage:
+    /// ```rust
+    /// # #[cfg(feature = "alloc")] {
+    /// # use sdecay::database::UninitDatabase;
+    /// let database = UninitDatabase::new().init_embedded_min();
+    /// # }
+    /// ```
+    #[cfg(feature = "embed-min")]
+    #[inline]
+    pub fn init_embedded_min(self) -> GenericDatabase<C> {
+        self.init_bytes(sdecay_sys::database::DATABASE_MIN)
+            .expect("Embedded database should be valid")
+    }
+
+    /// Creates initialized database from embedded "nocoinc-min" database
+    ///
+    /// ### Example
+    /// Using [`crate::container::BoxContainer`] for storage:
+    /// ```rust
+    /// # #[cfg(feature = "alloc")] {
+    /// # use sdecay::database::UninitDatabase;
+    /// let database = UninitDatabase::new().init_embedded_nocoinc_min();
+    /// # }
+    /// ```
+    #[cfg(feature = "embed-nocoinc-min")]
+    #[inline]
+    pub fn init_embedded_nocoinc_min(self) -> GenericDatabase<C> {
+        self.init_bytes(sdecay_sys::database::DATABASE_NOCOINC_MIN)
+            .expect("Embedded database should be valid")
+    }
+}
+
 /// Initialized and data-enabled `SandiaDecay` database. Can be created from [`GenericUninitDatabase`] (see it's doc), or directly via
 /// - [`GenericDatabase::from_path`] ([`GenericDatabase::from_path_in`])
 /// - [`GenericDatabase::from_bytes`] ([`GenericDatabase::from_bytes_in`])
@@ -308,6 +361,93 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericDatabase<C> {
         C::Allocator: Default,
     {
         Self::from_env_in(C::Allocator::default())
+    }
+
+    /// Creates initialized database from embedded "default" database
+    ///
+    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_embedded`] calls
+    ///
+    /// ### Example
+    /// Using [`crate::container::BoxContainer`] as storage:
+    /// ```rust
+    /// # #[cfg(feature = "alloc")] {
+    /// # use sdecay::database::Database;
+    /// // assuming `embed` feature is enabled
+    /// let database = Database::embedded();
+    /// # }
+    /// ```
+    #[cfg(feature = "embed")]
+    #[inline]
+    pub fn embedded_in(allocator: C::Allocator) -> Self {
+        GenericUninitDatabase::new_in(allocator).init_embedded()
+    }
+
+    /// Same as [`Self::embedded_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
+    #[cfg(feature = "embed")]
+    #[inline]
+    pub fn embedded() -> Self
+    where
+        C::Allocator: Default,
+    {
+        Self::embedded_in(C::Allocator::default())
+    }
+
+    /// Creates initialized database from embedded "min" database
+    ///
+    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_embedded_min`] calls
+    ///
+    /// ### Example
+    /// Using [`crate::container::BoxContainer`] as storage:
+    /// ```rust
+    /// # #[cfg(feature = "alloc")] {
+    /// # use sdecay::database::Database;
+    /// // assuming `embed-min` feature is enabled
+    /// let database = Database::embedded_min();
+    /// # }
+    /// ```
+    #[cfg(feature = "embed-min")]
+    #[inline]
+    pub fn embedded_min_in(allocator: C::Allocator) -> Self {
+        GenericUninitDatabase::new_in(allocator).init_embedded_min()
+    }
+
+    /// Same as [`Self::embedded_min_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
+    #[cfg(feature = "embed-min")]
+    #[inline]
+    pub fn embedded_min() -> Self
+    where
+        C::Allocator: Default,
+    {
+        Self::embedded_min_in(C::Allocator::default())
+    }
+
+    /// Creates initialized database from embedded "nocoinc-min" database
+    ///
+    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_embedded_nocoinc_min`] calls
+    ///
+    /// ### Example
+    /// Using [`crate::container::BoxContainer`] as storage:
+    /// ```rust
+    /// # #[cfg(feature = "alloc")] {
+    /// # use sdecay::database::Database;
+    /// // assuming `embed-nocoinc-min` feature is enabled
+    /// let database = Database::embedded_nocoinc_min();
+    /// # }
+    /// ```
+    #[cfg(feature = "embed-nocoinc-min")]
+    #[inline]
+    pub fn embedded_nocoinc_min_in(allocator: C::Allocator) -> Self {
+        GenericUninitDatabase::new_in(allocator).init_embedded_nocoinc_min()
+    }
+
+    /// Same as [`Self::embedded_nocoinc_min_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
+    #[cfg(feature = "embed-nocoinc-min")]
+    #[inline]
+    pub fn embedded_nocoinc_min() -> Self
+    where
+        C::Allocator: Default,
+    {
+        Self::embedded_nocoinc_min_in(C::Allocator::default())
     }
 
     /// Resets the database, returning it into uninitialized (empty) state
