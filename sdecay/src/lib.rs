@@ -12,6 +12,10 @@ pub mod container;
 
 // -- REST OF THE MODULES ARE MARKED WITH `#[forbid(unsafe)]` --
 
+#[doc = include_str!("../SAFETY.md")]
+#[forbid(unsafe_code)]
+pub mod safety {}
+
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
