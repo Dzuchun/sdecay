@@ -6,7 +6,10 @@ use crate::{
     container::Container,
     impl_moveable,
     nuclide_spec::{NuclideSpec, NumSpec},
-    wrapper::{CppException, Nuclide, NuclideActivityPair, NuclideNumAtomsPair, Wrapper},
+    wrapper::{
+        CppException, Nuclide, NuclideActivityPair, NuclideNumAtomsPair, NuclideTimeEvolution,
+        VecNuclideTimeEvolution, Wrapper,
+    },
 };
 
 /// Rust representation of `SandiaDecay`'s nuclide mixture
@@ -112,6 +115,256 @@ impl<'l> NuclideMixture<'l> {
         // - pointed objects are all live, since pointers were created from references
         unsafe { sdecay_sys::sandia_decay::NuclideMixture_addNuclide1(self_ptr, pair_ptr) };
     }
+
+    #[inline]
+    pub(crate) fn add_nuclide_by_activity(
+        self: Pin<&mut Self>,
+        nuclide: &Nuclide<'l>,
+        start_activity: f64,
+    ) {
+        // SAFETY: obtained pointer is only used to add a nuclide into the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        unsafe {
+            sdecay_sys::sandia_decay::NuclideMixture_addNuclideByActivity(
+                self_ptr,
+                nuclide.ptr(),
+                start_activity,
+            );
+        }
+    }
+
+    #[inline]
+    pub(crate) fn add_nuclide_by_abundance(
+        self: Pin<&mut Self>,
+        nuclide: &Nuclide<'_>,
+        num_init_atoms: f64,
+    ) {
+        // SAFETY: obtained pointer is only used to add an aged nuclide into the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        unsafe {
+            sdecay_sys::sandia_decay::NuclideMixture_addNuclideByAbundance(
+                self_ptr,
+                nuclide.ptr(),
+                num_init_atoms,
+            );
+        }
+    }
+
+    #[inline]
+    pub(crate) fn add_aged_nuclide_by_activity(
+        self: Pin<&mut Self>,
+        nuclide: &Nuclide<'_>,
+        activity: f64,
+        age_in_seconds: f64,
+    ) -> Result<(), CppException> {
+        // SAFETY: obtained pointer will be used to initialize the database, which does not move out the value
+        let self_ptr = unsafe { self.ptr_mut() };
+        let nuclide_ptr = nuclide.ptr();
+        let mut ok = MaybeUninit::<sdecay_sys::sdecay::Unit>::uninit();
+        let mut exception = MaybeUninit::<CppException>::uninit();
+        let exception_ptr = exception
+            .as_mut_ptr()
+            .cast::<sdecay_sys::sdecay::Exception>();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` and `path_ptr` point to live objects, since they were just created from references
+        let tag = unsafe {
+            sdecay_sys::sdecay::nuclide_mixture::try_addAgedNuclideByActivity(
+                ok.as_mut_ptr(),
+                exception_ptr,
+                self_ptr,
+                nuclide_ptr,
+                activity,
+                age_in_seconds,
+            )
+        };
+        if tag {
+            // call succeeded, assume database is init (`ffi::Unit` is trivially dropped)
+            Ok(())
+        } else {
+            // SAFETY: `tag == false` guarantees that exception occurred and written to `exception`
+            let exception = unsafe { exception.assume_init() };
+            Err(exception)
+        }
+    }
+
+    #[inline]
+    pub(crate) fn add_aged_nuclide_by_num_atoms(
+        self: Pin<&mut Self>,
+        nuclide: &Nuclide<'l>,
+        number_atoms: f64,
+        age_in_seconds: f64,
+    ) -> Result<(), CppException> {
+        // SAFETY: obtained pointer will be used to initialize the database, which does not move out the value
+        let self_ptr = unsafe { self.ptr_mut() };
+        let nuclide_ptr = nuclide.ptr();
+        let mut ok = MaybeUninit::<sdecay_sys::sdecay::Unit>::uninit();
+        let mut exception = MaybeUninit::<CppException>::uninit();
+        let exception_ptr = exception
+            .as_mut_ptr()
+            .cast::<sdecay_sys::sdecay::Exception>();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` and `path_ptr` point to live objects, since they were just created from references
+        let tag = unsafe {
+            sdecay_sys::sdecay::nuclide_mixture::try_addAgedNuclideByNumAtoms(
+                ok.as_mut_ptr(),
+                exception_ptr,
+                self_ptr,
+                nuclide_ptr,
+                number_atoms,
+                age_in_seconds,
+            )
+        };
+        if tag {
+            // call succeeded, assume database is init (`ffi::Unit` is trivially dropped)
+            Ok(())
+        } else {
+            // SAFETY: `tag == false` guarantees that exception occurred and written to `exception`
+            let exception = unsafe { exception.assume_init() };
+            Err(exception)
+        }
+    }
+
+    #[inline]
+    pub(crate) fn add_nuclide_in_secular_equilibrium(
+        self: Pin<&mut Self>,
+        parent: &Nuclide<'_>,
+        parent_activity: f64,
+    ) -> bool {
+        // SAFETY: obtained pointer is only used to add a nuclide into the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        unsafe {
+            sdecay_sys::sandia_decay::NuclideMixture_addNuclideInSecularEquilibrium(
+                self_ptr,
+                parent.ptr(),
+                parent_activity,
+            )
+        }
+    }
+
+    #[inline]
+    pub(crate) fn add_nuclide_in_prompt_equilibrium(
+        self: Pin<&mut Self>,
+        parent: &Nuclide<'_>,
+        parent_activity: f64,
+    ) {
+        // SAFETY: obtained pointer is only used to add a nuclide into the mixture
+        let self_ptr = unsafe { self.ptr_mut() };
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        unsafe {
+            sdecay_sys::sandia_decay::NuclideMixture_addNuclideInPromptEquilibrium(
+                self_ptr,
+                parent.ptr(),
+                parent_activity,
+            );
+        };
+    }
+
+    /// Exposes solutions for number of atoms for each nuclide in the mixture
+    pub fn decayed_to_nuclides_evolutions(&self) -> &[NuclideTimeEvolution<'l>] {
+        let self_ptr = self.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        let bindgen_vec = unsafe {
+            sdecay_sys::sandia_decay::NuclideMixture_decayedToNuclidesEvolutions(self_ptr)
+        };
+        // SAFETY: ffi call above returns a pointer to live `std::vector<NuclideTimeEvolution>`
+        let vec = unsafe { &*VecNuclideTimeEvolution::from_ptr(bindgen_vec) };
+        vec.as_slice()
+    }
+
+    /// Returns the number of nuclides given in the solution
+    ///
+    /// Corresponds to the index for nulides in the vector returned by [`decayed_to_nuclides_evolutions`](NuclideMixture::decayed_to_nuclides_evolutions)
+    #[inline]
+    pub fn num_solution_nuclides(&self) -> usize {
+        let self_ptr = self.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        let count: core::ffi::c_int =
+            unsafe { sdecay_sys::sandia_decay::NuclideMixture_numSolutionNuclides(self_ptr) };
+        #[expect(
+            clippy::cast_sign_loss,
+            reason = "Number of nuclides cannot be negative"
+        )]
+        {
+            count as usize
+        }
+    }
+
+    /// Gets solution nuclide at `index`
+    ///
+    /// ### Safety
+    /// `index` MUST be a valid nuclide index, otherwise it's a UB (specifically - uncaught C++ exception)
+    #[inline]
+    pub unsafe fn solution_nuclide_unchecked(&self, index: usize) -> &Nuclide<'l> {
+        let self_ptr = self.ptr();
+        #[expect(
+            clippy::cast_possible_wrap,
+            clippy::cast_possible_truncation,
+            reason = "It's a UB to specify indexes larger than number of nuclides, represented as `int` on C++ side"
+        )]
+        let index = index as core::ffi::c_int;
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to live object, since it was just created from a reference
+        // - `index` is a valid index of solution nuclide (function invariant)
+        let nuclide_ptr =
+            unsafe { sdecay_sys::sandia_decay::NuclideMixture_solutionNuclide(self_ptr, index) };
+        // SAFETY: ffi call above
+        // - never returns nullptr
+        // - returns nuclide references living for time `'l` (same or smaller time used to add them)
+        unsafe { Nuclide::from_ptr_unchecked(nuclide_ptr) }
+    }
+
+    /// Gets solution nuclide at `index`
+    ///
+    /// ### Returns
+    /// [`Option::None`] indicates invalid nuclide index
+    #[inline]
+    pub fn solution_nuclide(&self, index: usize) -> Option<&Nuclide<'l>> {
+        if index < self.num_solution_nuclides() {
+            // SAFETY: index was asserted to be valid by the condition above
+            Some(unsafe { self.solution_nuclide_unchecked(index) })
+        } else {
+            None
+        }
+    }
+
+    /// Returns an iterator over nuclides in [`decayed_to_nuclides_evolutions`](NuclideMixture::decayed_to_nuclides_evolutions)
+    #[inline]
+    pub fn solution_nuclides(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = &Nuclide<'l>> + FusedIterator + ExactSizeIterator {
+        (0..self.num_solution_nuclides()).map(|i| {
+            // SAFETY: index `i` is from range 0..num_solution_nuclides
+            unsafe { self.solution_nuclide_unchecked(i) }
+        })
+    }
+
     /// Returns the number of nuclides in the mixture at `t = 0`
     #[inline]
     pub fn num_initial_nuclides(&self) -> usize {
@@ -182,6 +435,52 @@ impl<'l> NuclideMixture<'l> {
         })
     }
 
+    /// Gets atom count of initial nuclide at `index`
+    ///
+    /// ### Safety
+    /// `index` MUST be a valid nuclide index, otherwise it's a UB (specifically - uncaught C++ exception)
+    pub unsafe fn initial_num_atoms_unchecked(&self, index: usize) -> f64 {
+        let self_ptr = self.ptr();
+        #[expect(
+            clippy::cast_possible_wrap,
+            clippy::cast_possible_truncation,
+            reason = "It's a UB to specify indexes larger than number of nuclides, represented as `int` on C++ side"
+        )]
+        let index = index as i32;
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to a live object, since it was just created from a reference
+        unsafe { sdecay_sys::sandia_decay::NuclideMixture_numInitialAtoms(self_ptr, index) }
+    }
+
+    /// Gets atom count of initial nuclide at `index`
+    ///
+    /// ### Returns
+    /// [`Option::None`] indicates invalid nuclide `index`
+    pub fn initial_num_atoms(&self, index: usize) -> Option<f64> {
+        if index < self.num_initial_nuclides() {
+            // SAFETY: index was asserted to be valid by the condition above
+            Some(unsafe { self.initial_num_atoms_unchecked(index) })
+        } else {
+            None
+        }
+    }
+
+    /// Returns an iterator over [`NuclideNumAtomsPair`] representing initial nuclides of the mixture
+    pub fn initial_nuclide_num_atoms(
+        &self,
+    ) -> impl DoubleEndedIterator<Item = NuclideNumAtomsPair<'_>> + FusedIterator + ExactSizeIterator
+    {
+        (0..self.num_initial_nuclides()).map(|i| {
+            // SAFETY: index `i` is from range 0..num_initial_nuclides
+            let nuclide = unsafe { self.initial_nuclide_unchecked(i) };
+            // SAFETY: index `i` is from range 0..num_initial_nuclides
+            let num_atoms = unsafe { self.initial_num_atoms_unchecked(i) };
+            NuclideNumAtomsPair { nuclide, num_atoms }
+        })
+    }
+
     /// Gets activity of initial nuclide at `index`
     ///
     /// ### Safety
@@ -245,6 +544,28 @@ impl<'l> NuclideMixture<'l> {
     #[inline]
     pub fn nuclide_atoms(&self, time: f64, spec: impl NuclideSpec) -> Option<f64> {
         spec.mixture_num_atoms(time, self)
+    }
+
+    #[expect(missing_docs)]
+    #[inline]
+    pub fn total_activity(&self, time: f64) -> f64 {
+        let self_ptr = self.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to a live object, since it was just created from a reference
+        unsafe { sdecay_sys::sandia_decay::NuclideMixture_totalActivity(self_ptr, time) }
+    }
+
+    #[expect(missing_docs)]
+    #[inline]
+    pub fn total_mass_in_grams(&self, time: f64) -> f64 {
+        let self_ptr = self.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to a live object, since it was just created from a reference
+        unsafe { sdecay_sys::sandia_decay::NuclideMixture_totalMassInGrams(self_ptr, time) }
     }
 
     pub(crate) fn activity_by_nuclide(&self, time: f64, nuclide: &Nuclide<'_>) -> Option<f64> {
