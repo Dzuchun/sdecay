@@ -25,4 +25,10 @@ mod macros;
 use macros::{generic_list, impl_moveable, nolt, vec_wrapper, wrapper};
 
 #[forbid(unsafe_code)]
+pub mod database;
+#[cfg(feature = "alloc")]
+pub use database::{Database, SharedDatabase, UninitDatabase, UninitSharedDatabase};
+pub use database::{LocalDatabase, UninitLocalDatabase};
+
+#[forbid(unsafe_code)]
 pub mod as_cpp_string;

@@ -6,6 +6,9 @@ use core::ffi::{c_double, c_float, c_short};
 
 use crate::wrapper;
 
+mod database;
+pub use database::SandiaDecayDataBase;
+
 mod nuclide;
 pub use nuclide::Nuclide;
 
@@ -23,8 +26,9 @@ use sdecay_sys::sdecay::{
     time_evolution_term_vec,
 };
 pub use vec::{
-    VecChar, VecCoincidencePair, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair,
-    VecNuclideAbundancePair, VecRadParticle, VecTimeEvolutionTerm, VecTransitionPtr,
+    VecChar, VecCoincidencePair, VecElementRef, VecEnergyCountPair, VecEnergyIntensityPair,
+    VecEnergyRatePair, VecNuclideAbundancePair, VecNuclideRef, VecRadParticle,
+    VecTimeEvolutionTerm, VecTransition, VecTransitionPtr,
 };
 
 mod enums;

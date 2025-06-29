@@ -4,7 +4,7 @@ use crate::{
     container::Container,
     vec_wrapper,
     wrapper::{
-        CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, Nuclide,
+        CoincidencePair, Element, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, Nuclide,
         NuclideAbundancePair, NuclideTimeEvolution, RadParticle, TimeEvolutionTerm, Transition,
     },
 };
@@ -18,6 +18,7 @@ vec_wrapper! { energy_count_pair, sdecay_sys::sandia_decay::EnergyCountPair, Ene
 vec_wrapper! { energy_rate_pair, sdecay_sys::sandia_decay::EnergyRatePair, EnergyRatePair }
 vec_wrapper! { nuclide_raw_ptr, *const sdecay_sys::sandia_decay::Nuclide, *const sdecay_sys::sandia_decay::Nuclide }
 vec_wrapper! { nuclide_ref['l], *const sdecay_sys::sandia_decay::Nuclide, &'l Nuclide<'l> }
+vec_wrapper! { element_ref['l], *const sdecay_sys::sandia_decay::Element, &'l Element<'l> }
 vec_wrapper! { nuclide['l], sdecay_sys::sandia_decay::Nuclide, Nuclide<'l> }
 vec_wrapper! { transition['l], sdecay_sys::sandia_decay::Transition, Transition<'l> }
 vec_wrapper! { time_evolution_term, sdecay_sys::sandia_decay::TimeEvolutionTerm, TimeEvolutionTerm }
