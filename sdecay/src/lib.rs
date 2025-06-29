@@ -23,3 +23,6 @@ pub use paste::paste;
 #[forbid(unsafe_code)]
 mod macros;
 use macros::{generic_list, impl_moveable, nolt, vec_wrapper, wrapper};
+
+#[forbid(unsafe_code)]
+pub mod as_cpp_string;
