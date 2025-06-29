@@ -29,8 +29,9 @@ use sdecay_sys::sdecay::{
     time_evolution_term_vec,
 };
 pub use vec::{
-    VecChar, VecCoincidencePair, VecElementRef, VecEnergyCountPair, VecEnergyIntensityPair,
-    VecEnergyRatePair, VecNuclideAbundancePair, VecNuclideActivityPair, VecNuclideRef,
+    VecChar, VecCoincidencePair, VecElement, VecElementRawPtr, VecElementRef, VecEnergyCountPair,
+    VecEnergyIntensityPair, VecEnergyRatePair, VecNuclide, VecNuclideAbundancePair,
+    VecNuclideActivityPair, VecNuclideNumAtomsPair, VecNuclideRawPtr, VecNuclideRef,
     VecNuclideTimeEvolution, VecRadParticle, VecTimeEvolutionTerm, VecTransition, VecTransitionPtr,
 };
 

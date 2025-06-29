@@ -5,8 +5,8 @@ use crate::{
     containers, vec_wrapper,
     wrapper::{
         CoincidencePair, Element, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, Nuclide,
-        NuclideAbundancePair, NuclideActivityPair, NuclideTimeEvolution, RadParticle,
-        TimeEvolutionTerm, Transition,
+        NuclideAbundancePair, NuclideActivityPair, NuclideNumAtomsPair, NuclideTimeEvolution,
+        RadParticle, TimeEvolutionTerm, Transition,
     },
 };
 
@@ -19,7 +19,9 @@ vec_wrapper! { energy_count_pair, sdecay_sys::sandia_decay::EnergyCountPair, Ene
 vec_wrapper! { energy_rate_pair, sdecay_sys::sandia_decay::EnergyRatePair, EnergyRatePair }
 vec_wrapper! { nuclide_raw_ptr, *const sdecay_sys::sandia_decay::Nuclide, *const sdecay_sys::sandia_decay::Nuclide }
 vec_wrapper! { nuclide_ref['l], *const sdecay_sys::sandia_decay::Nuclide, &'l Nuclide<'l> }
+vec_wrapper! { element_raw_ptr, *const sdecay_sys::sandia_decay::Element, *const sdecay_sys::sandia_decay::Element }
 vec_wrapper! { element_ref['l], *const sdecay_sys::sandia_decay::Element, &'l Element<'l> }
+vec_wrapper! { element['l], sdecay_sys::sandia_decay::Element, Element<'l> }
 vec_wrapper! { nuclide['l], sdecay_sys::sandia_decay::Nuclide, Nuclide<'l> }
 vec_wrapper! { transition['l], sdecay_sys::sandia_decay::Transition, Transition<'l> }
 vec_wrapper! { time_evolution_term, sdecay_sys::sandia_decay::TimeEvolutionTerm, TimeEvolutionTerm }
@@ -68,6 +70,30 @@ containers! { VecNuclideActivityPair['l]: sdecay_sys::sdecay::database::decay_ac
     ) -> VecNuclideActivityPair['l]
 }
 containers! { VecNuclideActivityPair['l]: sdecay_sys::sdecay::database::evolution_activities =>
+    /// Solves for evolution of a nuclide mixture
+    evolution() -> VecNuclideTimeEvolution['l]
+}
+
+impl VecNuclideActivityPair<'_> {
+    /// Simulates decay of a nuclide mixture, assigning the result to itself
+    pub fn decay_assign(self: core::pin::Pin<&mut Self>, time: f64) {
+        let self_ptr = self.ptr_mut().cast();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - `self_ptr` points to a live object, since it was just created from reference
+        unsafe { sdecay_sys::sdecay::database::decay_activities_assign(self_ptr, time) };
+    }
+}
+
+vec_wrapper! { nuclide_num_atoms_pair['l], sdecay_sys::sandia_decay::NuclideNumAtomsPair, NuclideNumAtomsPair<'l> }
+containers! { VecNuclideNumAtomsPair['l]: sdecay_sys::sdecay::database::decay_atoms =>
+    /// Simulates decay of a nuclide mixture, returning evolved mixture
+    decay(
+        time: f64 => time
+    ) -> VecNuclideActivityPair['l]
+}
+containers! { VecNuclideNumAtomsPair['l]: sdecay_sys::sdecay::database::evolution_atoms =>
     /// Solves for evolution of a nuclide mixture
     evolution() -> VecNuclideTimeEvolution['l]
 }
