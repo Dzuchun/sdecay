@@ -22,4 +22,4 @@ pub use paste::paste;
 
 #[forbid(unsafe_code)]
 mod macros;
-use macros::{generic_list, impl_moveable, nolt, wrapper};
+use macros::{generic_list, impl_moveable, nolt, vec_wrapper, wrapper};

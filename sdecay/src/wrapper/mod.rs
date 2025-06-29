@@ -14,6 +14,11 @@ pub use stdstring::StdString;
 mod exception;
 pub use exception::CppException;
 
+mod vec;
+pub use vec::{
+    VecChar, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair, VecTimeEvolutionTerm,
+};
+
 mod enums;
 pub use enums::*;
 

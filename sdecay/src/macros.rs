@@ -155,6 +155,259 @@ macro_rules! wrapper {
     };
 }
 pub(crate) use wrapper;
+
+macro_rules! vec_wrapper {
+    ($name:ident $([$l:lifetime])?, $ctype:ty, $rtype:ty) => {
+        ::paste::paste! {
+            #[doc = concat!("Rust representation of C++ `std::string<", stringify!($ctype), ">`\n\nThis type aims to be similar to `Vec<`[`", stringify!($rtype), "`]`>`, but please note that it should never be constructed or handled directly - safe handling is only possible behind the [`Container`] implementor")]
+            #[repr(C)]
+            pub struct [<Vec $name:camel>] $(<$l>)? {
+                /// Actual `std::vector`
+                inner: sdecay_sys::sdecay::[<$name _vec>],
+                /// This struct should never be moved
+                _pin: core::marker::PhantomPinned,
+                /// This struct should never be constructed
+                _private: core::marker::PhantomData<()>,
+                $(
+                /// Lifetime marker, restricting vector's lifetime to that of the elements
+                _lifetime: core::marker::PhantomData<& $l ()>,
+                )?
+            }
+        }
+
+        impl $(<$l>)? crate::wrapper::Wrapper for ::paste::paste!([<Vec $name:camel>] $(<$l>)?) {
+            type CSide = ::paste::paste!( sdecay_sys::sdecay::[<$name _vec>] );
+        }
+
+        // impl $(<$l>)? ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+        //     /// Vector's element type
+        //     ///
+        //     /// Intended for easier documentation navigation
+        //     type Item = $rtype;
+        // }
+
+        ::paste::paste!{crate::impl_moveable!{[<$name _vec>], [<Vec $name:camel>] $([$l])? }}
+
+        const _: () = const {
+            use core::mem::{size_of, align_of, offset_of};
+            type SelfNolt = ::paste::paste!{crate::nolt!([<Vec $name:camel>] $(<$l>)?)};
+            assert!(offset_of!(SelfNolt, inner) == 0, "Offset of vec inner");
+            assert!(size_of::<SelfNolt>() == ::paste::paste!(size_of::<sdecay_sys::sdecay::[<$name _vec>]>)(), "Size of vec wrapper");
+            assert!(align_of::<SelfNolt>() == ::paste::paste!(align_of::<sdecay_sys::sdecay::[<$name _vec>]>)(), "Size of vec wrapper");
+            // at this point
+            // - wrapper's size and alignment are equal to inner vector
+            // - inner vector's offset is 0
+            // meaning, we can safely cast vector wrapper to inner vector (but not the other way round, that still needs a proof of identical elements)
+        };
+
+        const _: () = const {
+            type ItemNolt = crate::nolt!($rtype);
+            // elements must AT LEAST have the same size and layout
+            use core::mem::{size_of, align_of};
+            assert!(size_of::<$ctype>() == size_of::<ItemNolt>(), "Size of vec wrapper");
+            assert!(align_of::<$ctype>() == align_of::<ItemNolt>(), "Size of vec wrapper");
+        };
+
+        impl $(<$l>)? ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+            #[inline]
+            pub(crate) fn bindgen_ptr(&self) -> *const ::paste::paste!(sdecay_sys::sdecay::[<$name _vec>]) {
+                core::ptr::from_ref(&self.inner)
+            }
+
+            /// ### Safety
+            /// Returned pointer should **NEVER** be used to move the value out
+            #[inline]
+            pub(crate) unsafe fn bindgen_ptr_mut(self: core::pin::Pin<&mut Self>) -> *mut ::paste::paste!(sdecay_sys::sdecay::[<$name _vec>]) {
+                // SAFETY: obtained reference will be immediately converted to a pointer
+                let rf = unsafe { self.get_unchecked_mut() };
+                core::ptr::from_mut(rf).cast()
+            }
+
+            #[inline]
+            pub(crate) fn ptr(&self) -> *const $rtype {
+                // SAFETY: ffi call forwarded to <https://cplusplus.com/reference/vector/vector/data/>
+                unsafe { ::paste::paste!{ sdecay_sys::sdecay::[<std_vector_ $name:lower _ptr>](self.bindgen_ptr()) } }.cast()
+            }
+
+            #[inline]
+            pub(crate) fn ptr_mut(self: core::pin::Pin<&mut Self>) -> *mut $rtype {
+                // SAFETY: obtained pointer will only be used to obtain data pointer from C++ side
+                let self_ptr = unsafe { self.bindgen_ptr_mut() };
+                // SAFETY: ffi call forwarded to <https://cplusplus.com/reference/vector/vector/data/>
+                unsafe { ::paste::paste!{sdecay_sys::sdecay::[<std_vector_ $name:lower _ptr_mut>](self_ptr)} }.cast()
+            }
+
+            #[allow(unused)]
+            #[inline]
+            pub(crate) fn from_ptr(inner: *const ::paste::paste!(sdecay_sys::sdecay::[<$name _vec>])) -> *const Self {
+                inner.cast()
+            }
+
+            /// Creates empty vector stored in container `C` allocated via provided allocator
+            #[inline]
+            pub fn new_in<C:crate::container::Container<Inner = Self>>(allocator: C::Allocator) -> C {
+                let mut uninit = C::uninit(allocator);
+                let ptr = C::uninit_inner_ptr(&mut uninit).cast();
+                // SAFETY: ffi call forwarded to `std::vector`'s default constructor
+                unsafe { ::paste::paste!{sdecay_sys::sdecay::[<std_vector_ $name:lower _new>](ptr)} };
+                // SAFETY: `std::vector`'s constructor initialized contained value
+                unsafe { C::init(uninit) }
+            }
+
+            /// Same as [`Self::new_in`], but uses `C::Allocator`'s default implementation
+            #[inline]
+            #[expect(clippy::new_ret_no_self)]
+            pub fn new<C:crate::container::Container<Inner = Self>>() -> C
+            where
+                C::Allocator: Default
+            {
+                Self::new_in(C::Allocator::default())
+            }
+
+            /// Forwarded to <https://cplusplus.com/reference/vector/vector/reserve/>
+            #[inline]
+            pub fn reserve(self: core::pin::Pin<&mut Self>, capacity: usize) {
+                // SAFETY: obtained pointer will only be used to reverse more memory in `std::vector` buffer
+                let self_ptr = unsafe { self.bindgen_ptr_mut() }.cast();
+                // SAFETY: ffi call forwarded to <https://cplusplus.com/reference/vector/vector/reserve/>
+                unsafe { ::paste::paste!{sdecay_sys::sdecay::[<std_vector_ $name:lower _reserve>](self_ptr, capacity)} }
+            }
+
+            /// Same as consequent [`Self::new_in`] and [`Self::reserve`] calls
+            #[inline]
+            pub fn new_reserve_in<C:crate::container::Container<Inner = Self>>(allocator: C::Allocator, capacity: usize) -> C {
+                let mut new = Self::new_in::<C>(allocator);
+                let r = new.try_inner().expect("Container was just created and should not be shared yet");
+                r.reserve(capacity);
+                new
+            }
+
+            /// Same as consequent [`Self::new_reserve_in`], but uses `C::Allocator`'s default implementation to obtain the allocator
+            #[inline]
+            pub fn new_reserve<C:crate::container::Container<Inner = Self>>(capacity: usize) -> C
+            where
+                C::Allocator: Default
+            {
+                Self::new_reserve_in(C::Allocator::default(), capacity)
+            }
+
+            /// Push `item` to the vector
+            ///
+            /// Note, that this is only possible if **element can be created**, namely, [`Self`] can never be the `item` here
+            pub fn push(self: core::pin::Pin<&mut Self>, item: $rtype) {
+                // SAFETY: obtained pointer will only be used to push item to the std::vector
+                let self_ptr = unsafe { self.bindgen_ptr_mut() }.cast();
+                let mut item = core::mem::MaybeUninit::new(item);
+                let item_ptr: *mut $ctype = item.as_mut_ptr().cast::<$ctype>();
+                // SAFETY: ffi call forwarded to <https://cplusplus.com/reference/vector/vector/push_back/>
+                unsafe { ::paste::paste!{sdecay_sys::sdecay::[<std_vector_ $name:lower _push>](self_ptr, item_ptr)} };
+            }
+
+
+            /// Returns `std::vector`'s length (element count)
+            #[inline]
+            pub fn len(&self) -> usize {
+                let self_ptr = self.bindgen_ptr().cast();
+                // SAFETY: ffi call forwarded to <https://cplusplus.com/reference/vector/vector/size/>
+                unsafe { ::paste::paste!{sdecay_sys::sdecay::[<std_vector_ $name:lower _size>](self_ptr)} }
+            }
+
+            /// Checks is `std::vector` is empty
+            ///
+            /// (yes, it does forward to C side, that's just how I feel)
+            #[inline]
+            pub fn is_empty(&self) -> bool {
+                let self_ptr = self.bindgen_ptr().cast();
+                // SAFETY: ffi call forwarded to <https://cplusplus.com/reference/vector/vector/empty/>
+                unsafe{ ::paste::paste!{sdecay_sys::sdecay::[<std_vector_ $name:lower _empty>](self_ptr)} }
+            }
+
+            #[doc = concat!("Returns contained elements as `&[`[`", stringify!($rtype), "`]")]
+            #[inline]
+            pub fn as_slice(&self) -> &[$rtype] {
+                let len = self.len();
+                if len == 0 {
+                    return &[];
+                }
+                let ptr = self.ptr();
+                // SAFETY:
+                // - data pointer points to first of vector's items
+                // - slice length is a vector item count
+                unsafe { core::slice::from_raw_parts(ptr, len) }
+            }
+
+            #[doc = concat!("Returns contained elements as `&mut [`[`", stringify!($rtype), "`]")]
+            #[inline]
+            pub fn as_mut_slice(self: core::pin::Pin<&mut Self>) -> &mut [$rtype] {
+                let len = self.len();
+                if len == 0 {
+                    return &mut [];
+                }
+                let ptr = self.ptr_mut();
+                // SAFETY:
+                // - data pointer points to first of vector's items
+                // - slice length is a vector item count
+                unsafe { core::slice::from_raw_parts_mut(ptr, len) }
+            }
+        }
+
+        impl $(<$l>)? core::fmt::Debug for ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+            #[inline]
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                core::fmt::Debug::fmt(self.as_ref(), f)
+            }
+        }
+
+
+        impl $(<$l>)? AsRef<[$rtype]> for ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+            #[inline]
+            fn as_ref(&self) -> &[$rtype] {
+                self.as_slice()
+            }
+        }
+
+        impl<$($l, )? Idx> core::ops::Index<Idx> for ::paste::paste!{[<Vec $name:camel>] $(<$l>)?}
+            where [$rtype]: core::ops::Index<Idx>
+        {
+            type Output = <[$rtype] as core::ops::Index<Idx>>::Output;
+
+            #[inline]
+            fn index(&self, index: Idx) -> &Self::Output {
+                self.as_slice().index(index)
+            }
+        }
+
+        impl<$($l, )? 'r> IntoIterator for &'r ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+            type Item = <&'r [$rtype] as IntoIterator>::Item;
+            type IntoIter = <&'r [$rtype] as IntoIterator>::IntoIter;
+
+            #[inline]
+            fn into_iter(self) -> Self::IntoIter {
+                self.as_slice().into_iter()
+            }
+        }
+
+        impl $(<$l>)? core::ops::Deref for ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+            type Target = [$rtype];
+
+            #[inline]
+            fn deref(&self) -> &[$rtype] {
+                self.as_slice()
+            }
+        }
+
+        impl $(<$l>)? Drop for ::paste::paste!{[<Vec $name:camel>] $(<$l>)?} {
+            #[inline]
+            fn drop(&mut self) {
+                let self_ptr = core::ptr::from_mut(self).cast();
+                // SAFETY: ffi call forwarded to `std::vector` destructor
+                unsafe { ::paste::paste!{ sdecay_sys::sdecay::[<std_vector_ $name:lower _destruct>](self_ptr) } }
+            }
+        }
+    };
+}
+pub(crate) use vec_wrapper;
+
 macro_rules! impl_moveable {
     ($name:ident, $rtype:ident $([$($garg:tt),+])?) => {
         // SAFETY: moving is handled on C++ side, via following function:
