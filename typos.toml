@@ -5,3 +5,11 @@ extend-exclude = [
     "sys/bindings.rs", # generated from not my code
 ]
 ignore-hidden = true
+
+[type.rust]
+extend-ignore-identifiers-re = [
+    "Ba",
+    "ba", 
+    "Nd",
+    "nd",
+]

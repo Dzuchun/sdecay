@@ -1,8 +1,9 @@
-use core::{mem::MaybeUninit, pin::Pin};
+use core::{ffi::c_int, mem::MaybeUninit, pin::Pin};
 
 use crate::{
     as_cpp_string::AsCppString,
     container::{Container, ExclusiveContainer, RefContainer},
+    element_spec::ElementSpec,
     impl_moveable,
     wrapper::{
         CppException, Element, Nuclide, Transition, VecChar, VecElementRef, VecNuclideRef,
@@ -268,11 +269,111 @@ impl SandiaDecayDataBase {
         let vec = unsafe { &*VecTransition::from_ptr(bindgen_vec) };
         vec.as_slice()
     }
+
+    pub(crate) fn element_by_atomic_number(&self, atomic_number: c_int) -> Option<&Element<'_>> {
+        let self_ptr = self.ptr();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are all live, since pointers were created from references
+        let ptr = unsafe {
+            sdecay_sys::sandia_decay::SandiaDecayDataBase_element(self_ptr, atomic_number)
+        };
+        // SAFETY: SandiaDecay always returns a pointer to a live `Element` or a null pointer
+        unsafe { Element::from_ptr(ptr) }
+    }
+
+    pub(crate) fn element_by_label(&self, label: impl AsCppString) -> Option<&Element<'_>> {
+        label.with_cpp_string(|label| {
+            let self_ptr = self.ptr();
+            let label_ptr = label.ptr();
+            // SAFETY: ffi call with
+            // - statically validated type representations
+            // - correct pointer constness (as of bindgen, that is)
+            // - pointed objects are all live, since pointers were created from references
+            let ptr = unsafe {
+                sdecay_sys::sandia_decay::SandiaDecayDataBase_element1(self_ptr, label_ptr)
+            };
+            // SAFETY: SandiaDecay always returns a pointer to a live `Element` or a null pointer
+            unsafe { Element::from_ptr(ptr) }
+        })
+    }
 }
 
 impl core::fmt::Debug for SandiaDecayDataBase {
     #[inline]
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str("Database(...)")
+    }
+}
+
+impl SandiaDecayDataBase {
+    /// Retrieves [`Element`] from the database, if present
+    ///
+    /// Note, that [`Element`] is described as [`ElementSpec`], see it's doc to find the best description for you
+    ///
+    /// ### Example
+    /// ```rust
+    /// # #[cfg(feature = "std")] {
+    /// # use sdecay::database::Database;
+    /// let database = Database::from_env().unwrap();
+    /// # use sdecay::element;
+    /// // via integer (created through `element` macro)
+    /// let hydrogen = database.try_element(element!(H)).unwrap();
+    /// let ferrum = database.try_element(element!(fe)).unwrap();
+    /// // note, that non-existing elements cannot be described via `element` macro:
+    /// // database.element(element!(Mi)).unwrap_err(); // no Mimicium :(
+    /// // you can try doing that manually:
+    /// # use sdecay::element_spec::ElementNum;
+    /// assert!(database.try_element(ElementNum(152)).is_none()); // is this Mimicium? maybe?
+    ///
+    /// // using str
+    /// assert!(database.try_element("Dr").is_none()); // no draconium :(
+    /// // using cstr
+    /// let tungsten = database.try_element(c"W").unwrap();
+    /// // using bytes
+    /// let carbon = database.try_element(b"C").unwrap();
+    /// // using other text types
+    /// let uranium = database.try_element("U".to_string()).unwrap();
+    /// # }
+    /// ```
+    #[inline]
+    pub fn try_element(&self, spec: impl ElementSpec) -> Option<&Element<'_>> {
+        spec.get_element(self)
+    }
+
+    /// Retrieves [`Element`] from the database
+    ///
+    /// Note, that [`Element`] is described as [`ElementSpec`], see it's doc to find the best description for you
+    ///
+    /// ### Panics
+    /// If described [`Element`] is not present in the database
+    ///
+    /// ### Example
+    /// ```rust
+    /// # #[cfg(feature = "std")] {
+    /// # use sdecay::database::Database;
+    /// let database = Database::from_env().unwrap();
+    /// # use sdecay::element;
+    /// // via integer (created through `element` macro)
+    /// let hydrogen = database.element(element!(H));
+    /// let ferrum = database.element(element!(fe));
+    /// // you can try doing that manually:
+    /// // assert!(database.element(ElementNum(152))); // (panics) is this Mimicium? maybe?
+    ///
+    /// // using str
+    /// // assert!(database.element("Dr").is_none()); // (panics) no draconium :(
+    /// // using cstr
+    /// let tungsten = database.element(c"W");
+    /// // using bytes
+    /// let carbon = database.element(b"C");
+    /// // using other text types
+    /// let uranium = database.element("U".to_string());
+    /// # }
+    /// ```
+    #[inline]
+    pub fn element(&self, spec: impl ElementSpec) -> &Element<'_> {
+        spec.get_element(self)
+            .expect("Element is not present in the database")
     }
 }

@@ -55,4 +55,7 @@ pub use database::{Database, SharedDatabase, UninitDatabase, UninitSharedDatabas
 pub use database::{LocalDatabase, UninitLocalDatabase};
 
 #[forbid(unsafe_code)]
+pub mod element_spec;
+
+#[forbid(unsafe_code)]
 pub mod as_cpp_string;
