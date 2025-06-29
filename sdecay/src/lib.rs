@@ -24,6 +24,30 @@ pub use paste::paste;
 mod macros;
 use macros::{generic_list, impl_moveable, nolt, vec_wrapper, wrapper};
 
+/// Constants defining `Sandia Decay`'s unit system.
+///
+/// ### Examples
+/// 5 seconds:
+/// ```rust
+/// # use sdecay::cst::second;
+/// let _ = 5.0 * second;
+/// ```
+///
+/// 3e7 Bq:
+/// ```rust
+/// # use sdecay::cst::Bq;
+/// let _ = 3.0e7 * Bq;
+/// ```
+///
+/// etc
+#[forbid(unsafe_code)]
+pub mod cst {
+    pub use sdecay_sys::sandia_decay::{
+        Bq, Ci, MBq, MeV, becquerel, cm, cm2, cm3, curie, day, eV, hour, keV, m, meter, mm, month,
+        second, year,
+    };
+}
+
 #[forbid(unsafe_code)]
 pub mod database;
 #[cfg(feature = "alloc")]
