@@ -4,10 +4,12 @@ use crate::{
     container::Container,
     vec_wrapper,
     wrapper::{
-        CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, TimeEvolutionTerm,
+        CoincidencePair, EnergyCountPair, EnergyIntensityPair, EnergyRatePair, RadParticle,
+        TimeEvolutionTerm,
     },
 };
 
+vec_wrapper! { rad_particle, sdecay_sys::sandia_decay::RadParticle, RadParticle}
 vec_wrapper! {coincidence_pair, sdecay_sys::sdecay::CoincidencePair, CoincidencePair}
 vec_wrapper! { energy_intensity_pair, sdecay_sys::sandia_decay::EnergyIntensityPair, EnergyIntensityPair }
 vec_wrapper! { energy_count_pair, sdecay_sys::sandia_decay::EnergyCountPair, EnergyCountPair }

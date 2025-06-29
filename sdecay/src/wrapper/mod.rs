@@ -2,7 +2,7 @@
 //!
 //! Unsafe: **YES**
 
-use core::ffi::c_double;
+use core::ffi::{c_double, c_float};
 
 use crate::wrapper;
 
@@ -15,6 +15,7 @@ mod exception;
 pub use exception::CppException;
 
 mod vec;
+use sdecay_sys::sdecay::coincidence_pair_vec;
 pub use vec::{
     VecChar, VecCoincidencePair, VecEnergyCountPair, VecEnergyIntensityPair, VecEnergyRatePair,
     VecTimeEvolutionTerm,
@@ -79,6 +80,42 @@ mod coincidence_pair {
         assert!(size_of::<f32>() == size_of::<core::ffi::c_float>());
         assert!(align_of::<f32>() == align_of::<core::ffi::c_float>());
     };
+}
+
+wrapper! {
+    #[derive(Debug)]
+    /// Represents information of a particle (of a given energy) given off during a nuclear transition.
+    #[expect(non_snake_case)]
+    sdecay_sys::sandia_decay::RadParticle => RadParticle {
+        ///  Particle type
+        pub type_ -> r#type: sdecay_sys::sandia_decay::ProductType::Type => ProductType,
+        ///  Energy of the particle
+        ///
+        ///  Applies to all [`ProductType`]s
+        pub energy -> energy: c_float => f32,
+        /// Intensity of this particle for this decay channel ($\in [0; 1]$)
+        ///
+        /// Applies to all ProductTypes
+        pub intensity -> intensity: c_float => f32,
+        /// Hindrance TODO: help link
+        ///
+        /// Applies only to alpha decays
+        pub hindrance -> hindrance: c_float => f32,
+        /// is log-10 of fermi integral (F)*parent_half-life (T) TODO: help link
+        ///
+        /// Applies to beta, positron, and electronCapture decays
+        pub logFT -> logFT: c_float => f32,
+        /// Forbiddenss of the decay
+        ///
+        /// Applies to beta, positron, and electron capture decays
+        pub forbiddenness -> forbiddenness: sdecay_sys::sandia_decay::ForbiddennessType::Type => ForbiddennessType,
+        /// Other radiation particles expected to be detected when this particle is detected. Useful for gamma spectroscopy where you have a chance of detecting two gammas as one detection event (thus you detect the summed energy)
+        ///
+        /// Currently this information only includes gamma, and has not been well tested
+        pub coincidences -> coincidences: coincidence_pair_vec => VecCoincidencePair,
+        @pin: _pin,
+        @no_constr: _no_constr,
+    }
 }
 
 wrapper! {
