@@ -1,9 +1,11 @@
-use core::{fmt::Debug, iter::FusedIterator};
+use core::{fmt::Debug, iter::FusedIterator, mem::MaybeUninit};
 
 use crate::{
+    as_cpp_string::AsCppString,
     container::Container,
     impl_moveable,
-    wrapper::{Nuclide, NuclideActivityPair, Wrapper},
+    nuclide_spec::{NuclideSpec, NumSpec},
+    wrapper::{CppException, Nuclide, NuclideActivityPair, Wrapper},
 };
 
 /// Rust representation of `SandiaDecay`'s nuclide mixture
@@ -190,6 +192,207 @@ impl<'l> NuclideMixture<'l> {
             // SAFETY: index `i` is from range 0..num_initial_nuclides
             let activity = unsafe { self.initial_activity_unchecked(i) };
             NuclideActivityPair { nuclide, activity }
+        })
+    }
+
+    /// Retrieves [`Nuclide`] activity from the database
+    ///
+    /// Note, that function expects [`NuclideSpec`], see it's doc for a list of accepted specifications
+    #[inline]
+    pub fn nuclide_activity(&self, time: f64, spec: impl NuclideSpec) -> Option<f64> {
+        spec.mixture_activity(time, self)
+    }
+
+    #[expect(missing_docs)]
+    #[inline]
+    pub fn nuclide_atoms(&self, time: f64, spec: impl NuclideSpec) -> Option<f64> {
+        spec.mixture_num_atoms(time, self)
+    }
+
+    pub(crate) fn activity_by_nuclide(&self, time: f64, nuclide: &Nuclide<'_>) -> Option<f64> {
+        let mut ok = MaybeUninit::<f64>::uninit();
+        let mut exception = MaybeUninit::<CppException>::uninit();
+        let exception_ptr = exception
+            .as_mut_ptr()
+            .cast::<sdecay_sys::sdecay::Exception>();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are live, since all pointers are created from references
+        let tag = unsafe {
+            sdecay_sys::sdecay::nuclide_mixture::try_activity_nuclide(
+                ok.as_mut_ptr(),
+                exception_ptr,
+                self.ptr(),
+                time,
+                nuclide.ptr(),
+            )
+        };
+        if tag {
+            // SAFETY: `tag == true`, so `ok` was initialized
+            let ok = unsafe { ok.assume_init() };
+            Some(ok)
+        } else {
+            // SAFETY: `tag == false`, so `exception` was initialized
+            let _ = unsafe { exception.assume_init() };
+            None
+        }
+    }
+
+    pub(crate) fn atoms_by_nuclide(&self, time: f64, nuclide: &Nuclide<'_>) -> Option<f64> {
+        let mut ok = MaybeUninit::<f64>::uninit();
+        let mut exception = MaybeUninit::<CppException>::uninit();
+        let exception_ptr = exception
+            .as_mut_ptr()
+            .cast::<sdecay_sys::sdecay::Exception>();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are live, since pointers are created from references
+        let tag = unsafe {
+            sdecay_sys::sdecay::nuclide_mixture::try_atoms_nuclide(
+                ok.as_mut_ptr(),
+                exception_ptr,
+                self.ptr(),
+                time,
+                nuclide.ptr(),
+            )
+        };
+        if tag {
+            // SAFETY: `tag == true`, so `ok` was initialized
+            let ok = unsafe { ok.assume_init() };
+            Some(ok)
+        } else {
+            // SAFETY: `tag == false`, so `exception` was initialized
+            let _ = unsafe { exception.assume_init() };
+            None
+        }
+    }
+    pub(crate) fn activity_by_num(&self, time: f64, spec: &NumSpec) -> Option<f64> {
+        let mut ok = MaybeUninit::<f64>::uninit();
+        let mut exception = MaybeUninit::<CppException>::uninit();
+        let exception_ptr = exception
+            .as_mut_ptr()
+            .cast::<sdecay_sys::sdecay::Exception>();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are live, since pointers are created from references
+        let tag = unsafe {
+            sdecay_sys::sdecay::nuclide_mixture::try_activity_num(
+                ok.as_mut_ptr(),
+                exception_ptr,
+                self.ptr(),
+                time,
+                spec.z,
+                spec.mass_number,
+                spec.iso.unwrap_or(0),
+            )
+        };
+        if tag {
+            // SAFETY: `tag == true`, so `ok` was initialized
+            let ok = unsafe { ok.assume_init() };
+            Some(ok)
+        } else {
+            // SAFETY: `tag == false`, so `exception` was initialized
+            let _ = unsafe { exception.assume_init() };
+            None
+        }
+    }
+
+    pub(crate) fn atoms_by_num(&self, time: f64, spec: &NumSpec) -> Option<f64> {
+        let mut ok = MaybeUninit::<f64>::uninit();
+        let mut exception = MaybeUninit::<CppException>::uninit();
+        let exception_ptr = exception
+            .as_mut_ptr()
+            .cast::<sdecay_sys::sdecay::Exception>();
+        // SAFETY: ffi call with
+        // - statically validated type representations
+        // - correct pointer constness (as of bindgen, that is)
+        // - pointed objects are live, since pointers are created from references
+        let tag = unsafe {
+            sdecay_sys::sdecay::nuclide_mixture::try_atoms_num(
+                ok.as_mut_ptr(),
+                exception_ptr,
+                self.ptr(),
+                time,
+                spec.z,
+                spec.mass_number,
+                spec.iso.unwrap_or(0),
+            )
+        };
+        if tag {
+            // SAFETY: `tag == true`, so `ok` was initialized
+            let ok = unsafe { ok.assume_init() };
+            Some(ok)
+        } else {
+            // SAFETY: `tag == false`, so `exception` was initialized
+            let _ = unsafe { exception.assume_init() };
+            None
+        }
+    }
+
+    pub(crate) fn activity_by_symbol(&self, time: f64, symbol: impl AsCppString) -> Option<f64> {
+        symbol.with_cpp_string(|symbol| {
+            let mut ok = MaybeUninit::<f64>::uninit();
+            let mut exception = MaybeUninit::<CppException>::uninit();
+            let exception_ptr = exception
+                .as_mut_ptr()
+                .cast::<sdecay_sys::sdecay::Exception>();
+            // SAFETY: ffi call with
+            // - statically validated type representations
+            // - correct pointer constness (as of bindgen, that is)
+            // - pointed objects are live, since pointers are created from references
+            let tag = unsafe {
+                sdecay_sys::sdecay::nuclide_mixture::try_activity_symbol(
+                    ok.as_mut_ptr(),
+                    exception_ptr,
+                    self.ptr(),
+                    time,
+                    symbol.ptr(),
+                )
+            };
+            if tag {
+                // SAFETY: `tag == true`, so `ok` was initialized
+                let ok = unsafe { ok.assume_init() };
+                Some(ok)
+            } else {
+                // SAFETY: `tag == false`, so `exception` was initialized
+                let _ = unsafe { exception.assume_init() };
+                None
+            }
+        })
+    }
+
+    pub(crate) fn atoms_by_symbol(&self, time: f64, symbol: impl AsCppString) -> Option<f64> {
+        symbol.with_cpp_string(|symbol| {
+            let mut ok = MaybeUninit::<f64>::uninit();
+            let mut exception = MaybeUninit::<CppException>::uninit();
+            let exception_ptr = exception
+                .as_mut_ptr()
+                .cast::<sdecay_sys::sdecay::Exception>();
+            // SAFETY: ffi call with
+            // - statically validated type representations
+            // - correct pointer constness (as of bindgen, that is)
+            // - pointed objects are live, since pointers are created from references
+            let tag = unsafe {
+                sdecay_sys::sdecay::nuclide_mixture::try_atoms_symbol(
+                    ok.as_mut_ptr(),
+                    exception_ptr,
+                    self.ptr(),
+                    time,
+                    symbol.ptr(),
+                )
+            };
+            if tag {
+                // SAFETY: `tag == true`, so `ok` was initialized
+                let ok = unsafe { ok.assume_init() };
+                Some(ok)
+            } else {
+                // SAFETY: `tag == false`, so `exception` was initialized
+                let _ = unsafe { exception.assume_init() };
+                None
+            }
         })
     }
 }

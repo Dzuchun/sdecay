@@ -4,12 +4,18 @@
 
 use core::ffi::CStr;
 
-use crate::wrapper::{Nuclide, SandiaDecayDataBase, StdString};
+use crate::wrapper::{Nuclide, NuclideMixture, SandiaDecayDataBase, StdString};
 
 /// Marks type as identifier for [`Nuclide`] in the [`crate::Mixture`] or [`SandiaDecayDataBase`]
 pub trait NuclideSpec {
     /// Retrieves described [`Nuclide`] from the database
     fn get_nuclide<'l>(&self, database: &'l SandiaDecayDataBase) -> Option<&'l Nuclide<'l>>;
+
+    /// Retrieves activity of the described [`Nuclide`] in the mixture at the provided time
+    fn mixture_activity(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64>;
+
+    /// Retrieves number of atoms of the described [`Nuclide`] in the mixture at the provided time
+    fn mixture_num_atoms(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64>;
 }
 
 macro_rules! impl_as_cpp_string {
@@ -21,6 +27,24 @@ macro_rules! impl_as_cpp_string {
                 database: &'l SandiaDecayDataBase,
             ) -> Option<&'l Nuclide<'l>> {
                 database.nuclide_by_name(*self)
+            }
+
+            #[inline]
+            fn mixture_activity(
+                &self,
+                time: f64,
+                mixture: &NuclideMixture<'_>,
+            ) -> Option<f64> {
+                mixture.activity_by_symbol(time, *self)
+            }
+
+            #[inline]
+            fn mixture_num_atoms(
+                &self,
+                time: f64,
+                mixture: &NuclideMixture<'_>,
+            ) -> Option<f64> {
+                mixture.atoms_by_symbol(time, *self)
             }
         }
     };
@@ -40,6 +64,24 @@ macro_rules! impl_as_cpp_string {
             ) -> Option<&'l Nuclide<'l>> {
                 database.nuclide_by_name(self)
             }
+
+            #[inline]
+            fn mixture_activity(
+                &self,
+                time: f64,
+                mixture: &NuclideMixture<'_>,
+            ) -> Option<f64> {
+                mixture.activity_by_symbol(time, self)
+            }
+
+            #[inline]
+            fn mixture_num_atoms(
+                &self,
+                time: f64,
+                mixture: &NuclideMixture<'_>,
+            ) -> Option<f64> {
+                mixture.atoms_by_symbol(time, self)
+            }
         }
         impl_as_cpp_string!(@@&$t);
         impl_as_cpp_string!(@@&&$t);
@@ -52,6 +94,24 @@ macro_rules! impl_as_cpp_string {
                 database: &'l SandiaDecayDataBase,
             ) -> Option<&'l Nuclide<'l>> {
                 database.nuclide_by_name(&**self)
+            }
+
+            #[inline]
+            fn mixture_activity(
+                &self,
+                time: f64,
+                mixture: &NuclideMixture<'_>,
+            ) -> Option<f64> {
+                mixture.activity_by_symbol(time, &**self)
+            }
+
+            #[inline]
+            fn mixture_num_atoms(
+                &self,
+                time: f64,
+                mixture: &NuclideMixture<'_>,
+            ) -> Option<f64> {
+                mixture.atoms_by_symbol(time, &**self)
             }
         }
     };
@@ -90,12 +150,32 @@ impl NuclideSpec for Nuclide<'_> {
     fn get_nuclide<'l>(&self, database: &'l SandiaDecayDataBase) -> Option<&'l Nuclide<'l>> {
         database.nuclide_by_name(&self.symbol)
     }
+
+    #[inline]
+    fn mixture_activity(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64> {
+        mixture.activity_by_nuclide(time, self)
+    }
+
+    #[inline]
+    fn mixture_num_atoms(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64> {
+        mixture.atoms_by_nuclide(time, self)
+    }
 }
 
 impl NuclideSpec for &Nuclide<'_> {
     #[inline]
     fn get_nuclide<'l>(&self, database: &'l SandiaDecayDataBase) -> Option<&'l Nuclide<'l>> {
         database.nuclide_by_name(&self.symbol)
+    }
+
+    #[inline]
+    fn mixture_activity(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64> {
+        mixture.activity_by_nuclide(time, self)
+    }
+
+    #[inline]
+    fn mixture_num_atoms(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64> {
+        mixture.atoms_by_nuclide(time, self)
     }
 }
 
@@ -114,6 +194,16 @@ impl NuclideSpec for NumSpec {
     #[inline]
     fn get_nuclide<'l>(&self, database: &'l SandiaDecayDataBase) -> Option<&'l Nuclide<'l>> {
         database.nuclide_by_num(self.z, self.mass_number, self.iso.unwrap_or(0))
+    }
+
+    #[inline]
+    fn mixture_activity(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64> {
+        mixture.activity_by_num(time, self)
+    }
+
+    #[inline]
+    fn mixture_num_atoms(&self, time: f64, mixture: &NuclideMixture<'_>) -> Option<f64> {
+        mixture.atoms_by_num(time, self)
     }
 }
 
