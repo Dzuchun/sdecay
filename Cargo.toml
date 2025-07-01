@@ -1,5 +1,5 @@
 [workspace]
-members = ["sys", "sdecay", "sdecay/nolt", "examples/*"]
+members = ["sys", "sdecay", "sdecay/nolt", "examples/*", "sys/database/common"]
 resolver = "3"
 
 [workspace.lints.rust]
