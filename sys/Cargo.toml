@@ -1,8 +1,41 @@
 [package]
 name = "sdecay-sys"
-version = "0.1.0"
+version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403"
 edition = "2024"
 links = "SandiaDecay"
+authors = ["Diachenko Artem", "Artem artemdiachenko09@gmail.com"]
+description = "Bindings to SandiaDecay C++ library along with some helper functions"
+readme = "README.md"
+repository = "https://github.com/Dzuchun/sdecay/sys"
+license = "LGPL-3.0-or-later"
+keywords = [
+    "bindings",
+    "physics",
+    "atom",
+    "isotope",
+    "nuclear-physics", 
+]
+categories = ["external-ffi-bindings", "no-std"]
+include = [
+    # licenses
+    "COPYING",
+    "COPYING.LESSER",
+    "vendor/3rdparty/rapidxml/license.txt",
+    "vendor/LICENSE.txt",
+    # docs
+    "README.md",
+    "BUILDING.md",
+    # C++ sources
+    "vendor/3rdparty/rapidxml/*.hpp",
+    "vendor/SandiaDecay.cpp",
+    "vendor/SandiaDecay.h",
+    "wrapper.cc",
+    "wrapper.hpp",
+    # Rust sources
+    "build.rs",
+    "bindings.rs",
+    "lib.rs",
+]
 
 [package.metadata.cargo-all-features]
 always_include_features = ["database", "database-min", "database-nocoinc-min"]
