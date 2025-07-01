@@ -35,7 +35,7 @@ Allows database initialization by path from the environment
 - [`GenericUninitDatabase::init_env`]
 - [`GenericDatabase::from_env`].
 
-# `embed`/`embed-min`/`embed-nocoinc-min`
+# `database`/`database-min`/`database-nocoinc-min`
 
 Embeds corresponding database that comes with repository directly into the binary. This is a _significant_ bloat, so consider using it only if you truly need a standalone binary, or employing quick prototyping.
 
@@ -43,9 +43,9 @@ Embeds corresponding database that comes with repository directly into the binar
 (none)
 
 ## Notable functions
-- [`GenericUninitDatabase::init_embedded`]
-- [`GenericUninitDatabase::init_embedded_min`]
-- [`GenericUninitDatabase::init_embedded_nocoinc_min`]
-- [`GenericDatabase::embedded`]
-- [`GenericDatabase::embedded_min`]
-- [`GenericDatabase::embedded_nocoinc_min`]
+- [`GenericUninitDatabase::init_vendor`]
+- [`GenericUninitDatabase::init_vendor_min`]
+- [`GenericUninitDatabase::init_vendor_nocoinc_min`]
+- [`GenericDatabase::vendor`]
+- [`GenericDatabase::vendor_min`]
+- [`GenericDatabase::vendor_nocoinc_min`]

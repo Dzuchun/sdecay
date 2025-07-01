@@ -33,43 +33,24 @@ pub mod sdecay {
 }
 
 /// Provided databases as included byte blobs
-#[cfg(any(
-    feature = "embed",
-    feature = "embed-min",
-    feature = "embed-nocoinc-min"
-))]
 pub mod database {
-    use pathsep::{join_path, path_separator};
-
-    /// "Default" database provided by `SandiaDecay`
+    /// Default database provided by `SandiaDecay`
     ///
     /// Size: about 30MiB
-    #[cfg(feature = "embed")]
-    pub const DATABASE: &[u8] = include_bytes!(pathsep::join_path!(
-        env!("CARGO_MANIFEST_DIR"),
-        "vendor",
-        "sandia.decay.xml"
-    ));
+    #[cfg(feature = "database")]
+    pub const DATABASE: &[u8] = sandia_decay_database::FILE;
 
-    /// "Min" database provided by `SandiaDecay`
+    /// `min` database provided by `SandiaDecay`
     ///
     /// Size: about 16MiB
-    #[cfg(feature = "embed-min")]
-    pub const DATABASE_MIN: &[u8] = include_bytes!(join_path!(
-        env!("CARGO_MANIFEST_DIR"),
-        "vendor",
-        "sandia.decay.min.xml"
-    ));
+    #[cfg(feature = "database-min")]
+    pub const DATABASE_MIN: &[u8] = sandia_decay_database_min::FILE;
 
-    /// "Nocoinc-min" database provided by `SandiaDecay`
+    /// `nocoinc-min` database provided by `SandiaDecay`
     ///
     /// Size: about 6MiB
-    #[cfg(feature = "embed-nocoinc-min")]
-    pub const DATABASE_NOCOINC_MIN: &[u8] = include_bytes!(join_path!(
-        env!("CARGO_MANIFEST_DIR"),
-        "vendor",
-        "sandia.decay.nocoinc.min.xml"
-    ));
+    #[cfg(feature = "database-nocoinc-min")]
+    pub const DATABASE_NOCOINC_MIN: &[u8] = sandia_decay_database_nocoinc_min::FILE;
 }
 
 #[cfg(test)]

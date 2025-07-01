@@ -40,15 +40,17 @@ As an FFI crate, safety is a big concern. See [`safety`] for notes on safety des
 
 ## Database file
 
-[SandiaDecay] uses it's own database xml-based database format, and I'm not really sure how you'd go about creating it yourself. Library's repository provides several versions, so you should pick and download one before using the crate.
+[SandiaDecay] uses it's own database xml-based database format, and I'm not really sure how you'd go about creating it yourself. Library's repository provides several versions, so you need to pick one before using the crate.
 
 ## Constructing a database
 
 [Database file](#database-file) is required in some form to construct a `Database`. There are several options to go about this:
 
-- Obtain database file bytes[^1] [^2], and use [`from_bytes`](crate::database::GenericDatabase::from_bytes_in)-like constructor
-- Get a path to database file, and use [`from_path`](crate::database::GenericDatabase::from_path_in)-like constructor
-- Store a path to database file in the `SANDIA_DATABASE_PATH` environment variable, and use [`from_env`](crate::database::GenericDatabase::from_env_in)-like constructor
+- Download database yourself, and
+    - obtain database file bytes[^1] [^2], and use [`from_bytes`](crate::database::GenericDatabase::from_bytes_in)-like constructor
+    - get a path to database file, and use [`from_path`](crate::database::GenericDatabase::from_path_in)-like constructor
+    - store a path to database file in the `SANDIA_DATABASE_PATH` environment variable, and use [`from_env`](crate::database::GenericDatabase::from_env_in)-like constructor
+- Enable one of `database*` features and construct it directly via corresponding method. Note, that this approach will download the database from GitHub before compilation, and embed it into your binary, so expect for build to take some time.
 
 [^1]: If you wish to embed database file into your binary, see [`macro@include_bytes`]
 [^2]: Unfortunately, separate allocation has to be performed on C++ side, as [SandiaDecay]'s interface expects `std::vector<char> &`

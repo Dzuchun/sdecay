@@ -180,12 +180,12 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericUninitDatabase<C> {
     /// ```rust
     /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::database::UninitDatabase;
-    /// let database = UninitDatabase::new().init_embedded();
+    /// let database = UninitDatabase::new().init_vendor();
     /// # }
     /// ```
-    #[cfg(feature = "embed")]
+    #[cfg(feature = "database")]
     #[inline]
-    pub fn init_embedded(self) -> GenericDatabase<C> {
+    pub fn init_vendor(self) -> GenericDatabase<C> {
         self.init_bytes(sdecay_sys::database::DATABASE)
             .expect("Embedded database should be valid")
     }
@@ -197,12 +197,12 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericUninitDatabase<C> {
     /// ```rust
     /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::database::UninitDatabase;
-    /// let database = UninitDatabase::new().init_embedded_min();
+    /// let database = UninitDatabase::new().init_vendor_min();
     /// # }
     /// ```
-    #[cfg(feature = "embed-min")]
+    #[cfg(feature = "database-min")]
     #[inline]
-    pub fn init_embedded_min(self) -> GenericDatabase<C> {
+    pub fn init_vendor_min(self) -> GenericDatabase<C> {
         self.init_bytes(sdecay_sys::database::DATABASE_MIN)
             .expect("Embedded database should be valid")
     }
@@ -214,12 +214,12 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericUninitDatabase<C> {
     /// ```rust
     /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::database::UninitDatabase;
-    /// let database = UninitDatabase::new().init_embedded_nocoinc_min();
+    /// let database = UninitDatabase::new().init_vendor_nocoinc_min();
     /// # }
     /// ```
-    #[cfg(feature = "embed-nocoinc-min")]
+    #[cfg(feature = "database-nocoinc-min")]
     #[inline]
-    pub fn init_embedded_nocoinc_min(self) -> GenericDatabase<C> {
+    pub fn init_vendor_nocoinc_min(self) -> GenericDatabase<C> {
         self.init_bytes(sdecay_sys::database::DATABASE_NOCOINC_MIN)
             .expect("Embedded database should be valid")
     }
@@ -365,89 +365,88 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericDatabase<C> {
 
     /// Creates initialized database from embedded "default" database
     ///
-    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_embedded`] calls
+    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_vendor`] calls
     ///
     /// ### Example
     /// Using [`crate::container::BoxContainer`] as storage:
     /// ```rust
     /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::database::Database;
-    /// // assuming `embed` feature is enabled
-    /// let database = Database::embedded();
+    /// // assuming `database` feature is enabled
+    /// let database = Database::vendor();
     /// # }
     /// ```
-    #[cfg(feature = "embed")]
+    #[cfg(feature = "database")]
     #[inline]
-    pub fn embedded_in(allocator: C::Allocator) -> Self {
-        GenericUninitDatabase::new_in(allocator).init_embedded()
+    pub fn vendor_in(allocator: C::Allocator) -> Self {
+        GenericUninitDatabase::new_in(allocator).init_vendor()
     }
 
-    /// Same as [`Self::embedded_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
-    #[cfg(feature = "embed")]
+    /// Same as [`Self::vendor_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
+    #[cfg(feature = "database")]
     #[inline]
-    pub fn embedded() -> Self
+    pub fn vendor() -> Self
     where
         C::Allocator: Default,
     {
-        Self::embedded_in(C::Allocator::default())
+        Self::vendor_in(C::Allocator::default())
     }
 
     /// Creates initialized database from embedded "min" database
     ///
-    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_embedded_min`] calls
+    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_vendor_min`] calls
     ///
     /// ### Example
     /// Using [`crate::container::BoxContainer`] as storage:
     /// ```rust
     /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::database::Database;
-    /// // assuming `embed-min` feature is enabled
-    /// let database = Database::embedded_min();
+    /// // assuming `database-min` feature is enabled
+    /// let database = Database::vendor_min();
     /// # }
     /// ```
-    #[cfg(feature = "embed-min")]
+    #[cfg(feature = "database-min")]
     #[inline]
-    pub fn embedded_min_in(allocator: C::Allocator) -> Self {
-        GenericUninitDatabase::new_in(allocator).init_embedded_min()
+    pub fn vendor_min_in(allocator: C::Allocator) -> Self {
+        GenericUninitDatabase::new_in(allocator).init_vendor_min()
     }
 
-    /// Same as [`Self::embedded_min_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
-    #[cfg(feature = "embed-min")]
+    /// Same as [`Self::vendor_min_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
+    #[cfg(feature = "database-min")]
     #[inline]
-    pub fn embedded_min() -> Self
+    pub fn vendor_min() -> Self
     where
         C::Allocator: Default,
     {
-        Self::embedded_min_in(C::Allocator::default())
+        Self::vendor_min_in(C::Allocator::default())
     }
 
     /// Creates initialized database from embedded "nocoinc-min" database
     ///
-    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_embedded_nocoinc_min`] calls
+    /// This is the same as consequent [`UninitDatabase::new`] and [`UninitDatabase::init_vendor_nocoinc_min`] calls
     ///
     /// ### Example
     /// Using [`crate::container::BoxContainer`] as storage:
     /// ```rust
     /// # #[cfg(feature = "alloc")] {
     /// # use sdecay::database::Database;
-    /// // assuming `embed-nocoinc-min` feature is enabled
-    /// let database = Database::embedded_nocoinc_min();
+    /// let database = Database::vendor_nocoinc_min();
     /// # }
     /// ```
-    #[cfg(feature = "embed-nocoinc-min")]
+    #[cfg(feature = "database-nocoinc-min")]
     #[inline]
-    pub fn embedded_nocoinc_min_in(allocator: C::Allocator) -> Self {
-        GenericUninitDatabase::new_in(allocator).init_embedded_nocoinc_min()
+    pub fn vendor_nocoinc_min_in(allocator: C::Allocator) -> Self {
+        GenericUninitDatabase::new_in(allocator).init_vendor_nocoinc_min()
     }
 
-    /// Same as [`Self::embedded_nocoinc_min_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
-    #[cfg(feature = "embed-nocoinc-min")]
+    /// Same as [`Self::vendor_nocoinc_min_in`], but uses `C::Allocator`'s [`Default`] implementation to obtain the allocator
+    #[cfg(feature = "database-nocoinc-min")]
     #[inline]
-    pub fn embedded_nocoinc_min() -> Self
+    pub fn vendor_nocoinc_min() -> Self
     where
         C::Allocator: Default,
     {
-        Self::embedded_nocoinc_min_in(C::Allocator::default())
+        Self::vendor_nocoinc_min_in(C::Allocator::default())
     }
 
     /// Resets the database, returning it into uninitialized (empty) state

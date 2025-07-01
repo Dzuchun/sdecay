@@ -5,7 +5,7 @@ edition = "2024"
 links = "SandiaDecay"
 
 [package.metadata.cargo-all-features]
-always_include_features = ["embed", "embed-min", "embed-nocoinc-min"]
+always_include_features = ["database", "database-min", "database-nocoinc-min"]
 
 [lib]
 path = "lib.rs"
@@ -14,14 +14,16 @@ path = "lib.rs"
 cc = "1.2.27"
 
 [dependencies]
-pathsep = { version = "0.1", optional = true }
+sandia-decay-database = { version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403", optional = true }
+sandia-decay-database-min = { version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403", optional = true }
+sandia-decay-database-nocoinc-min = { version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403", optional = true }
 
 [features]
 default = []
 git = []
-embed = ["dep:pathsep"]
-embed-min = ["dep:pathsep"]
-embed-nocoinc-min = ["dep:pathsep"]
+database = ["dep:sandia-decay-database"]
+database-min = ["dep:sandia-decay-database-min"]
+database-nocoinc-min = ["dep:sandia-decay-database-nocoinc-min"]
 
 [lints]
 workspace = true
