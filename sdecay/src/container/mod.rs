@@ -45,7 +45,7 @@ unsafe impl<T: Copy> Moveable for T {
 /// Represents container that can be used to safely handle types with non-trivial move semantics
 ///
 /// ### Examples
-/// Container types usually end in "Container": [`BoxContainer`], [`RcContainer`], [`ArcContainer`], [`RefContainer`], etc. You may implement your own, and most methods would accept it just fine.
+/// Container types usually end in "Container": [`BoxContainer`], [`ArcContainer`], [`RefContainer`], etc. You may implement your own, and most methods would accept it just fine.
 ///
 /// Typically, container lifecycle involves:
 ///
@@ -631,7 +631,7 @@ impl<T> core::fmt::Debug for UninitArcContainer<T> {
     }
 }
 
-/// [`Container`] implementation via [`Arc`]
+/// [`Container`] implementation via privately implemented `Arc`
 ///
 /// ### Example
 /// ```rust
