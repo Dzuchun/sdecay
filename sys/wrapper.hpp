@@ -5,12 +5,13 @@
 #include <string.h>
 #include <vector>
 
+using std::size_t;
+
 namespace sdecay {
 
 void std_string_from_cstr(std::string *out, const char *cstr);
 
-void std_string_from_bytes(std::string *out, const char *buffer,
-                           std::size_t size);
+void std_string_from_bytes(std::string *out, const char *buffer, size_t size);
 
 const char *std_string_cstr(const std::string *self);
 void std_string_bytes(const std::string *self, const char **ptr, size_t *len);

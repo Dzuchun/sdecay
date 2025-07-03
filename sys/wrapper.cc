@@ -1,11 +1,5 @@
 #include "wrapper.hpp"
 
-#include "SandiaDecay.h"
-#include <cstdlib>
-#include <exception>
-#include <string.h>
-#include <vector>
-
 // cred: cGPT
 // prompt: alike "please give me Rust core::ptr::write, but in C++"
 template <typename T> inline void write(T *dst, T src) {
@@ -35,8 +29,7 @@ void std_string_from_cstr(std::string *out, const char *cstr) {
     write(out, res);
 }
 
-void std_string_from_bytes(std::string *out, const char *buffer,
-                           std::size_t size) {
+void std_string_from_bytes(std::string *out, const char *buffer, size_t size) {
     auto res = std::string(buffer, size);
     write(out, res);
 }
