@@ -11,9 +11,9 @@ use std::{
     path::PathBuf,
 };
 
-const BUFSIZ: usize = 2 << 20;
-
+#[cfg(not(docsrs))]
 pub fn download(url: &str) {
+    const BUFSIZ: usize = 2 << 20;
     let out_dir = PathBuf::from(var_os("OUT_DIR").expect("should have a cargo output dir"));
     let database_path = out_dir.join("database.xml");
     {
@@ -44,3 +44,6 @@ pub fn download(url: &str) {
         }
     }
 }
+
+#[cfg(docsrs)]
+pub fn download(_url: &str) {}

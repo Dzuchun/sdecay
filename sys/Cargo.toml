@@ -25,6 +25,8 @@ include = [
     # docs
     "README.md",
     "BUILDING.md",
+    "katex.html",
+    "doc-theme.css",
     # C++ sources
     "vendor/3rdparty/rapidxml/*.hpp",
     "vendor/SandiaDecay.cpp",
@@ -39,6 +41,13 @@ include = [
 
 [package.metadata.cargo-all-features]
 always_include_features = ["database", "database-min", "database-nocoinc-min"]
+
+[package.metadata.docs.rs]
+rustdoc-args = [
+    "--html-in-header", "katex.html",
+    "--extend-css", "doc-theme.css"
+]
+all-features = true
 
 [lib]
 path = "lib.rs"
