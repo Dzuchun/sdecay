@@ -11,20 +11,19 @@ denylist = [ "git" ] # don't try enabling git feature
 always_include_features = [ "database", "database-min", "database-nocoinc-min" ]
 
 [dependencies]
-sdecay-sys = { path = "../sys" }
+sdecay-sys.workspace = true
 thiserror = { version = "2.0.12", default-features = false }
-# these are proc macros
-nolt = { path = "nolt" }
+# proc macros
+sdecay-nolt.workspace = true
 paste = "1.0.15"
-pathsep = { version = "0.1" }
+pathsep = "0.1"
 
 [dev-dependencies]
 approx = { version = "0.5.1", default-features = false }
 
 [features]
-# default = []
 default = ["std"]
-std = ["alloc"]
+std = ["alloc", "thiserror/std"]
 alloc = []
 git = ["sdecay-sys/git"]
 database = ["sdecay-sys/database"]

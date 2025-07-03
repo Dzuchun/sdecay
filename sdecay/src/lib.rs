@@ -36,10 +36,13 @@ extern crate std;
 
 pub use paste::paste;
 
+#[macro_use]
+extern crate sdecay_nolt;
+
 #[forbid(unsafe_code)]
 mod macros;
 use macros::{
-    containers, ffi_unwrap_or, forward_pin_mut_call, impl_moveable, nolt, vec_wrapper, wrapper,
+    containers, ffi_unwrap_or, forward_pin_mut_call, impl_moveable, vec_wrapper, wrapper,
 };
 
 /// Constants defining `Sandia Decay`'s unit system.

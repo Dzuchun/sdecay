@@ -2,8 +2,6 @@
 //!
 //! NOTE: macro definitions do contain `unsafe` keyword, but there's no actual code unsafe code expanded here. Only modules allowing `unsafe` code are permitted to expand macro with it
 
-pub(crate) use nolt::nolt;
-
 macro_rules! containers {
     ($recv:path $([$($garg:tt),+])?: $cname:path =>
         $(#[$($attr:tt)+])* $name:ident $([ $(self: $l:lifetime $(,)?)? $($narg:tt),+])? (
@@ -176,7 +174,7 @@ macro_rules! wrapper {
             #[doc(hidden)]
             #[expect(non_camel_case_types)]
             #[allow(unused)]
-            type [<$wrapper _nolt>] = crate::nolt!($wrapper $(<$($garg),+>)?);
+            type [<$wrapper _nolt>] = nolt!($wrapper $(<$($garg),+>)?);
         }
 
         ::paste::paste!{crate::impl_moveable!{[< $wrapper:snake >], $wrapper $([$($garg)+])? }}
@@ -192,7 +190,7 @@ macro_rules! wrapper {
         // assert same size, alignment and offset of each field
         $(const _:() = const {
             type SelfNolt = ::paste::paste!{[<$wrapper _nolt>]};
-            type ItemNolt = crate::nolt!($fouter_ty);
+            type ItemNolt = nolt!($fouter_ty);
             use core::mem::{align_of, size_of, offset_of};
             assert!(size_of::<ItemNolt>() == size_of::<$finner_ty>());
             assert!(align_of::<ItemNolt>() == align_of::<$finner_ty>());
@@ -279,7 +277,7 @@ macro_rules! vec_wrapper {
 
         const _: () = const {
             use core::mem::{size_of, align_of, offset_of};
-            type SelfNolt = ::paste::paste!{crate::nolt!([<Vec $name:camel>] $(<$l>)?)};
+            type SelfNolt = ::paste::paste!{nolt!([<Vec $name:camel>] $(<$l>)?)};
             assert!(offset_of!(SelfNolt, inner) == 0, "Offset of vec inner");
             assert!(size_of::<SelfNolt>() == ::paste::paste!(size_of::<sdecay_sys::sdecay::[<$name _vec>]>)(), "Size of vec wrapper");
             assert!(align_of::<SelfNolt>() == ::paste::paste!(align_of::<sdecay_sys::sdecay::[<$name _vec>]>)(), "Size of vec wrapper");
@@ -290,7 +288,7 @@ macro_rules! vec_wrapper {
         };
 
         const _: () = const {
-            type ItemNolt = crate::nolt!($rtype);
+            type ItemNolt = nolt!($rtype);
             // elements must AT LEAST have the same size and layout
             use core::mem::{size_of, align_of};
             assert!(size_of::<$ctype>() == size_of::<ItemNolt>(), "Size of vec wrapper");
@@ -545,8 +543,8 @@ macro_rules! ffi_unwrap_or {
     ($cname:path => $name:ident ( $($arg:ident: $argt:ty),*$(,)? ) -> $rtype:ident $(<$l:lifetime>)? ?? $out:ident -> $default_expr:block) => {
         #[doc = concat!("### Safety\n- `out` must point to properly allocated but uninitialized memory (will be overwritten, with no drop logic)\n- rest of the arguments must adhere to ", stringify!($cname),"'s invariants")]
         unsafe fn $name (
-            out: *mut <nolt::nolt!($rtype $(<$l>)?) as crate::wrapper::Wrapper>::CSide,
-            $($arg: <nolt::nolt!($argt) as crate::wrapper::Wrapper>::CSide,)*
+            out: *mut <nolt!($rtype $(<$l>)?) as crate::wrapper::Wrapper>::CSide,
+            $($arg: <nolt!($argt) as crate::wrapper::Wrapper>::CSide,)*
         ) {
             let mut error = MaybeUninit::<CppException>::uninit();
             let error_ptr = error.as_mut_ptr().cast::<sdecay_sys::sdecay::Exception>();
