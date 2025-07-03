@@ -1,0 +1,251 @@
+name: CI Ubuntu
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: static checks
+    runs-on: ubuntu-latest # NOTE: don't use matrix here, these are static checks!
+    env:
+      SANDIA_DECAY_GIT: 1 # required for successful builds
+      SANDIA_DATABASE_PATH: ${{ github.workspace }}/sys/vendor/sandia.decay.min.xml
+    steps:
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt,clippy
+
+      # cred: https://github.com/actions/cache/blob/main/examples.md#rust---cargo
+      - name: Cargo registry cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Spellcheck Repo
+        uses: crate-ci/typos@v1.33.1
+        with:
+          config: typos.toml
+
+      - name: Install check-all-fetures
+        run: cargo install cargo-all-features || true
+
+      - name: Syntax check
+        env:
+          RUSTFLAGS: -D warnings
+        run: cargo check-all-features
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Lints check
+        run: cargo clippy --all --tests -- -D warnings
+
+  test-git-env:
+    name: test with contained git submodule
+    runs-on: ubuntu-latest
+    env:
+      SANDIA_DECAY_GIT: 1
+      SANDIA_DATABASE_PATH: ${{ github.workspace }}/sys/vendor/sandia.decay.min.xml
+    steps:
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      # cred: https://github.com/actions/cache/blob/main/examples.md#rust---cargo
+      - name: Cargo registry cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test -sys crate (environment trigger)
+        working-directory: ./sys
+        run: |
+          cargo clean -p sdecay-sys
+          cargo t
+          cargo t --release
+
+      - name: Test -sys crate (feature trigger)
+        run: |
+          unset SANDIA_DECAY_GIT
+          cargo clean -p sdecay-sys
+          cargo t \
+            -p sdecay-sys \
+            --features git
+          cargo t \
+            -p sdecay-sys \
+            --features git \
+            --release
+
+      - name: Install check-all-fetures
+        run: cargo install cargo-all-features || true
+
+      - name: Test main crate
+        run: |
+          cargo test-all-features -p sdecay
+          cargo test-all-features -p sdecay --release
+
+  test-paths:
+    name: with provided library and include paths
+    runs-on: ubuntu-latest
+    env:
+      SANDIA_DECAY_INCLUDE_DIR: ${{ github.workspace }}/SandiaDecay
+      SANDIA_DECAY_LIB_DIR: ${{ github.workspace }}/SandiaDecay/build
+      SANDIA_DATABASE_PATH: ${{ github.workspace }}/sys/vendor/sandia.decay.min.xml
+    steps:
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      # cred: https://github.com/actions/cache/blob/main/examples.md#rust---cargo
+      - name: Cargo registry cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout SandiaDecay
+        uses: actions/checkout@v4
+        with:
+          path: SandiaDecay
+          repository: sandialabs/SandiaDecay
+
+      - name: Build SandiaDecay
+        uses: threeal/cmake-action@v2.1.0
+        with:
+          source-dir: SandiaDecay
+          options: |
+            CMAKE_POLICY_VERSION_MINIMUM=3.5
+            CMAKE_BUILD_TYPE=Release
+
+      - name: Test -sys crate (feature trigger)
+        run: |
+          unset SANDIA_DECAY_GIT
+          cargo clean -p sdecay-sys
+          cargo t \
+            -p sdecay-sys \
+            --features git
+          cargo t \
+            -p sdecay-sys \
+            --features git \
+            --release
+
+      - name: Install check-all-fetures
+        run: cargo install cargo-all-features || true
+
+      - name: Test main crate
+        run: |
+          cargo test-all-features -p sdecay
+          cargo test-all-features -p sdecay --release
+
+  test-system:
+    name: with installed in default directories
+    runs-on: ubuntu-latest
+    env:
+      SANDIA_DATABASE_PATH: ${{ github.workspace }}/sys/vendor/sandia.decay.min.xml
+      CPLUS_INCLUDE_PATH: ${{ github.workspace }}/SandiaDecay
+      RUSTFLAGS: -L native=${{ github.workspace }}/SandiaDecay/build
+      RUSTDOCFLAGS: -L native=${{ github.workspace }}/SandiaDecay/build
+    steps:
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      # cred: https://github.com/actions/cache/blob/main/examples.md#rust---cargo
+      - name: Cargo registry cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout SandiaDecay
+        uses: actions/checkout@v4
+        with:
+          path: SandiaDecay
+          repository: sandialabs/SandiaDecay
+
+      - name: Build SandiaDecay
+        uses: threeal/cmake-action@v2.1.0
+        with:
+          source-dir: SandiaDecay
+          options: |
+            CMAKE_POLICY_VERSION_MINIMUM=3.5
+            CMAKE_BUILD_TYPE=Release
+
+      - name: Test -sys crate (feature trigger)
+        run: |
+          unset SANDIA_DECAY_GIT
+          cargo clean -p sdecay-sys
+          cargo t \
+            -p sdecay-sys \
+            --features git
+          cargo t \
+            -p sdecay-sys \
+            --features git \
+            --release
+
+      - name: Install check-all-fetures
+        run: cargo install cargo-all-features || true
+
+      - name: Test main crate
+        run: |
+          cargo test-all-features -p sdecay
+          cargo test-all-features -p sdecay --release
+
