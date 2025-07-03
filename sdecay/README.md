@@ -1,5 +1,5 @@
-![CI status](https://github.com/Dzuchun/sdecay/actions/workflows/test-ubuntu.yml/badge.svg)
-[![Documentation status](https://github.com/Dzuchun/sdecay/actions/workflows/docs.yml/badge.svg)][docs]
+![CI Ubuntu](https://github.com/Dzuchun/sdecay/actions/workflows/test-ubuntu.yml/badge.svg)
+[![Documentation status](https://github.com/Dzuchun/sdecay/actions/workflows/build-docs.yml/badge.svg)][docs]
 
 A Rust interface for [SandiaDecay] C++ library, used to calculate nuclear decays and emissions.
 
@@ -411,4 +411,4 @@ N(Mg24, t) = 3.539e4 * exp(+3.418e-3 * t) + 3.539e4 * exp(+3.418e-3 * t) + -1.08
 ```
 
 [SandiaDecay]: <https://github.com/sandialabs/SandiaDecay>
-[docs]: <https://docs.rs/crate/sdecay/latest>
+[docs]: <https://docs.rs/sdecay/latest/sdecay/>
