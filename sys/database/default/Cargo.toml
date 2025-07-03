@@ -9,7 +9,7 @@ description = "Default database provided by SandiaDecay"
 readme = "README.md"
 
 [build-dependencies]
-sandia-decay-database-common = "0.1.1"
+sandia-decay-database-common.workspace = true
 
 [dependencies]
 pathsep = "0.1"

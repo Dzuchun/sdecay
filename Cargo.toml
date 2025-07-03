@@ -8,6 +8,22 @@ repository = "https://github.com/Dzuchun/sdecay"
 license = "LGPL-3.0-or-later"
 edition = '2024'
 
+[workspace.dependencies.sandia-decay-database-common]
+path = "sys/database/common"
+version = "0.1.1"
+
+[workspace.dependencies.sandia-decay-database]
+path = "sys/database/default"
+version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403"
+
+[workspace.dependencies.sandia-decay-database-min]
+path = "sys/database/min"
+version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403"
+
+[workspace.dependencies.sandia-decay-database-nocoinc-min]
+path = "sys/database/nocoinc-min"
+version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403"
+
 [workspace.lints.rust]
 rust_2018_idioms = { level = "deny", priority = -1 }
 missing_debug_implementations = "deny"
