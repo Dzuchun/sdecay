@@ -1,3 +1,6 @@
+![CI status](https://github.com/Dzuchun/sdecay/actions/workflows/test-ubuntu.yml/badge.svg)
+[![Documentation status](https://github.com/Dzuchun/sdecay/actions/workflows/docs.yml/badge.svg)][docs]
+
 A Rust interface for [SandiaDecay] C++ library, used to calculate nuclear decays and emissions.
 
 # Disclaimer
