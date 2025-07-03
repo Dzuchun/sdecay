@@ -8,7 +8,7 @@ path = "main.rs"
 name = "doc-example"
 
 [dependencies]
-sdecay.workspace = true
+sdecay = { workspace = true, features = [ "database-min" ] }
 
 [lints]
 workspace = true

@@ -12,8 +12,7 @@ use sdecay::{
 };
 
 fn main() {
-    const DATABASE_PATH: &str = env!("SANDIA_DATABASE_PATH");
-    let database = Database::from_path(DATABASE_PATH).unwrap();
+    let database = Database::vendor_min();
 
     println!("constructing mixture");
     {
