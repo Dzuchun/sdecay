@@ -394,7 +394,7 @@ dependencies = [
 
 [[package]]
 name = "sandia-decay-database"
-version = "0.1.6+cd75314"
+version = "0.2.0+cd75314"
 dependencies = [
  "pathsep",
  "sandia-decay-database-common",
@@ -402,14 +402,14 @@ dependencies = [
 
 [[package]]
 name = "sandia-decay-database-common"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [
  "minreq",
 ]
 
 [[package]]
 name = "sandia-decay-database-min"
-version = "0.1.6+cd75314"
+version = "0.2.0+cd75314"
 dependencies = [
  "pathsep",
  "sandia-decay-database-common",
@@ -417,7 +417,7 @@ dependencies = [
 
 [[package]]
 name = "sandia-decay-database-nocoinc-min"
-version = "0.1.6+cd75314"
+version = "0.2.0+cd75314"
 dependencies = [
  "pathsep",
  "sandia-decay-database-common",
@@ -443,7 +443,7 @@ dependencies = [
 
 [[package]]
 name = "sdecay"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "approx",
  "paste",
@@ -455,7 +455,7 @@ dependencies = [
 
 [[package]]
 name = "sdecay-nolt"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -464,7 +464,7 @@ dependencies = [
 
 [[package]]
 name = "sdecay-sys"
-version = "0.1.6+cd75314"
+version = "0.2.0+cd75314"
 dependencies = [
  "cc",
  "sandia-decay-database",

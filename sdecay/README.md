@@ -32,7 +32,7 @@ This crate has multiple build options. See detailed instructions at [`building`]
 After choosing your option, add
 ```toml
 # Cargo.toml
-sdecay = "0.1"
+sdecay = "0.2"
 ```
 
 # Safety

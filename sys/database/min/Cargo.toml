@@ -4,7 +4,7 @@ repository.workspace = true
 license.workspace = true
 edition.workspace = true
 name = "sandia-decay-database-min"
-version = "0.1.6+cd75314"
+version = "0.2.0+cd75314"
 description = "`min` database provided by SandiaDecay"
 readme = "README.md"
 
