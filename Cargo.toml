@@ -10,19 +10,23 @@ edition = '2024'
 
 [workspace.dependencies.sandia-decay-database-common]
 path = "sys/database/common"
-version = "0.1.1"
+version = "0.1.5"
 
 [workspace.dependencies.sandia-decay-database]
 path = "sys/database/default"
-version = "0.1.0"
+version = "0.1.6"
 
 [workspace.dependencies.sandia-decay-database-min]
 path = "sys/database/min"
-version = "0.1.0"
+version = "0.1.6"
 
 [workspace.dependencies.sandia-decay-database-nocoinc-min]
 path = "sys/database/nocoinc-min"
-version = "0.1.0"
+version = "0.1.6"
+
+[workspace.dependencies.sdecay-sys]
+path = "sys"
+version = "0.1.6"
 
 [workspace.lints.rust]
 rust_2018_idioms = { level = "deny", priority = -1 }

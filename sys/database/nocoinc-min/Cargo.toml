@@ -4,7 +4,7 @@ repository.workspace = true
 license.workspace = true
 edition.workspace = true
 name = "sandia-decay-database-nocoinc-min"
-version = "0.1.0+cd75314b56e12b80497531a1fbeed9c8e9968403"
+version = "0.1.6+cd75314"
 description = "`nocoinc-min` database provided by SandiaDecay"
 readme = "README.md"
 
@@ -16,4 +16,3 @@ pathsep = "0.1"
 
 [lib]
 path = "lib.rs"
-

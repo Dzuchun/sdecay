@@ -1,6 +1,7 @@
-#![doc = "README.md"]
+#![doc = include_str!("README.md")]
 #![allow(missing_docs)]
 
+#[cfg(not(docsrs))]
 use pathsep::{join_path, path_separator};
 
 #[cfg(not(docsrs))]

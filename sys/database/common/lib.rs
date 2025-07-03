@@ -1,8 +1,9 @@
-//! You probably don't need this crate. Here are actual database crates:
-//! - `sandia-decay-database`
-//! - `sandia-decay-database-min`
-//! - `sandia-decay-database-nocoinc-min`
-#![allow(missing_docs, clippy::missing_panics_doc)]
+#![doc = include_str!("README.md")]
+#![allow(
+    missing_docs,
+    clippy::missing_panics_doc,
+    clippy::items_after_statements
+)]
 
 use std::{
     env::var_os,
@@ -11,9 +12,7 @@ use std::{
     path::PathBuf,
 };
 
-#[cfg(not(docsrs))]
 pub fn download(url: &str) {
-    const BUFSIZ: usize = 2 << 20;
     let out_dir = PathBuf::from(var_os("OUT_DIR").expect("should have a cargo output dir"));
     let database_path = out_dir.join("database.xml");
     {
@@ -29,6 +28,7 @@ pub fn download(url: &str) {
             .expect("should be able to open database file");
         let mut writer = BufWriter::new(database_file);
 
+        const BUFSIZ: usize = 2 << 20;
         let mut buf = vec![0; BUFSIZ];
         loop {
             let len = response
@@ -44,6 +44,3 @@ pub fn download(url: &str) {
         }
     }
 }
-
-#[cfg(docsrs)]
-pub fn download(_url: &str) {}
