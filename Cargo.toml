@@ -2,6 +2,12 @@
 members = ["sys", "sdecay", "sdecay/nolt", "examples/*", "sys/database/*"]
 resolver = "3"
 
+[workspace.package]
+authors = ["Diachenko Artem", "Artem artemdiachenko09@gmail.com"]
+repository = "https://github.com/Dzuchun/sdecay"
+license = "LGPL-3.0-or-later"
+edition = '2024'
+
 [workspace.lints.rust]
 rust_2018_idioms = { level = "deny", priority = -1 }
 missing_debug_implementations = "deny"

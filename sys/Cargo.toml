@@ -1,13 +1,13 @@
 [package]
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
 name = "sdecay-sys"
 version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403"
-edition = "2024"
 links = "SandiaDecay"
-authors = ["Diachenko Artem", "Artem artemdiachenko09@gmail.com"]
 description = "Bindings to SandiaDecay C++ library along with some helper functions"
 readme = "README.md"
-repository = "https://github.com/Dzuchun/sdecay/sys"
-license = "LGPL-3.0-or-later"
 keywords = [
     "bindings",
     "physics",

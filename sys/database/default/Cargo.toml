@@ -1,12 +1,12 @@
 [package]
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
 name = "sandia-decay-database"
 version = "0.1.0-cd75314b56e12b80497531a1fbeed9c8e9968403"
-edition = "2024"
 description = "Default database provided by SandiaDecay"
-repository = "https://github.com/Dzuchun/sdecay/sys/database/default"
 readme = "README.md"
-authors = ["Diachenko Artem", "Artem artemdiachenko09@gmail.com"]
-license = "LGPL-3.0-or-later"
 
 [build-dependencies]
 sandia-decay-database-common = "0.1.1"
