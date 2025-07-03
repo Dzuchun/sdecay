@@ -136,7 +136,7 @@ impl<C: Container<Inner = SandiaDecayDataBase>> GenericUninitDatabase<C> {
 /// Error while initializing database by path from environment variable
 ///
 /// Returned by [`GenericUninitDatabase::init_env`] and [`GenericDatabase::from_env`]
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Error)]
 pub enum EnvInitError {
     /// `SANDIA_DATABASE_PATH` is not present in the environment
     #[error("No `SANDIA_DATABASE_PATH` variable in the environment")]

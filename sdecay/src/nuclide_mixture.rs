@@ -96,7 +96,7 @@ forward_pin_mut_call!({'l, C: Container<Inner = NuclideMixture<'l>>} GenericMixt
 ) -> bool [true;false]);
 
 /// Error returned by [`GenericMixture::add_aged_nuclide_by_activity`] and [`GenericMixture::add_aged_nuclide_by_num_atoms`]
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Error)]
 pub enum AgedNuclideError {
     /// Container's access to the mixture is not exclusive
     #[error("Container's access to the mixture is not exclusive")]
@@ -163,7 +163,7 @@ forward_pin_mut_call!({'l, C: Container<Inner = NuclideMixture<'l>>} GenericMixt
 ]);
 
 /// Error returned by [`GenericMixture::add_nuclide_in_secular_equilibrium`]
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Error)]
 pub enum AddSecularEquilibriumNuclideError {
     /// Container's access to the mixture is not exclusive
     #[error("Container's access to the mixture is not exclusive")]

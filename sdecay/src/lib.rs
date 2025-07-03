@@ -38,6 +38,8 @@ pub use paste::paste;
 
 #[macro_use]
 extern crate sdecay_nolt;
+#[macro_use]
+extern crate thiserror;
 
 #[forbid(unsafe_code)]
 mod macros;

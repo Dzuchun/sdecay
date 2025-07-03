@@ -6,7 +6,7 @@ use core::{
 use crate::wrapper::Wrapper;
 
 /// Error type representing C++ exception
-#[derive(thiserror::Error)]
+#[derive(Error)]
 #[repr(C)]
 pub struct CppException(pub(crate) sdecay_sys::sdecay::Exception);
 
