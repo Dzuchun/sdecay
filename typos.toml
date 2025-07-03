@@ -50,9 +50,7 @@ extend-ignore-re = []
 
 [type.cpp]
 extend-glob = []
-extend-ignore-identifiers-re = [
-    "typ"
-]
+extend-ignore-identifiers-re = []
 extend-ignore-words-re = []
 extend-ignore-re = []
 

@@ -140,18 +140,18 @@ fn perform_evolution() {
 
 mod layout {
     macro_rules! layout {
-        ($name:ident, $typ:ty) => {
+        ($name:ident, $type:ty) => {
             mod $name {
                 #[test]
                 fn size() {
-                    let rust_size = core::mem::size_of::<$typ>();
+                    let rust_size = core::mem::size_of::<$type>();
                     let c_size = unsafe { crate::sdecay::layout::$name::size };
                     assert_eq!(rust_size, c_size, "Binding type should have correct size");
                 }
 
                 #[test]
                 fn align() {
-                    let rust_align = core::mem::align_of::<$typ>();
+                    let rust_align = core::mem::align_of::<$type>();
                     let c_align = unsafe { crate::sdecay::layout::$name::align };
                     assert_eq!(
                         rust_align, c_align,

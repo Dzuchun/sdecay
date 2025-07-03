@@ -296,7 +296,7 @@ fn main() -> anyhow::Result<()> {
                     f64::from(step) * args.time / f64::from(args.steps - 1)
                 };
                 let act = mix.nuclide_activity(t * second, input.nuclide).unwrap();
-                write!(output, ",{:.10}", act)?;
+                write!(output, ",{act:.10}")?;
             } //for( size_t step = 0; step < numhistories; ++step )
 
             output.write_all(b"\n")?;

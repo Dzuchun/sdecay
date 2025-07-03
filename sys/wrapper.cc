@@ -42,7 +42,7 @@ void std_string_bytes(const std::string *self, const char **ptr, size_t *len) {
 
 void std_string_destruct(std::string *self) { self->~basic_string(); }
 
-#define STD_VEC_OPS_DEF(name, typ)                                             \
+#define STD_VEC_OPS_DEF(name, type)                                            \
     void std_vector_##name##_new(name##_vec *out) {                            \
         write(out, name##_vec());                                              \
     }                                                                          \
@@ -51,10 +51,10 @@ void std_string_destruct(std::string *self) { self->~basic_string(); }
         self->reserve(capacity);                                               \
     }                                                                          \
                                                                                \
-    void std_vector_##name##_push(name##_vec *self, typ *item) {               \
+    void std_vector_##name##_push(name##_vec *self, type *item) {              \
         self->push_back(std::move(*item));                                     \
     }                                                                          \
-    void std_vector_##name##_from_data(typ const *data, size_t len,            \
+    void std_vector_##name##_from_data(type const *data, size_t len,           \
                                        name##_vec *out) {                      \
         auto res = std::vector(data, data + len);                              \
         write(out, res);                                                       \
@@ -67,11 +67,11 @@ void std_string_destruct(std::string *self) { self->~basic_string(); }
         return self->empty();                                                  \
     }                                                                          \
                                                                                \
-    typ const *std_vector_##name##_ptr(const name##_vec *self) {               \
+    type const *std_vector_##name##_ptr(const name##_vec *self) {              \
         return self->data();                                                   \
     }                                                                          \
                                                                                \
-    typ *std_vector_##name##_ptr_mut(name##_vec *self) {                       \
+    type *std_vector_##name##_ptr_mut(name##_vec *self) {                      \
         return self->data();                                                   \
     }                                                                          \
                                                                                \
@@ -136,8 +136,8 @@ void Exception::destruct(Exception &ex) {
         write(out, res);                                                       \
     }
 
-#define MOVE_DEF(name, typ)                                                    \
-    void move_##name(typ *dst, typ *src) { move_from_to(dst, src); }
+#define MOVE_DEF(name, type)                                                   \
+    void move_##name(type *dst, type *src) { move_from_to(dst, src); }
 
 MOVE_DEF(database, SandiaDecay::SandiaDecayDataBase);
 MOVE_DEF(mixture, SandiaDecay::NuclideMixture);
@@ -155,8 +155,8 @@ MOVE_DEF(element, SandiaDecay::Element);
 MOVE_DEF(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 MOVE_DEF(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
-#define MOVE_VEC_DEF(name, typ)                                                \
-    void move_##name##_vec(std::vector<typ> *dst, std::vector<typ> *src) {     \
+#define MOVE_VEC_DEF(name, type)                                               \
+    void move_##name##_vec(std::vector<type> *dst, std::vector<type> *src) {   \
         move_from_to(dst, src);                                                \
     }
 
@@ -516,10 +516,10 @@ void human_str_summary(std::string *out,
 
 namespace layout {
 
-#define LAYOUT_DEF(name, typ)                                                  \
+#define LAYOUT_DEF(name, type)                                                 \
     namespace name {                                                           \
-    const size_t size = sizeof(typ);                                           \
-    const size_t align = alignof(typ);                                         \
+    const size_t size = sizeof(type);                                          \
+    const size_t align = alignof(type);                                        \
     }
 
 LAYOUT_DEF(std_string, std::string);
@@ -539,10 +539,10 @@ LAYOUT_DEF(element, SandiaDecay::Element);
 LAYOUT_DEF(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 LAYOUT_DEF(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
-#define LAYOUT_VEC_DEF(name, typ)                                              \
+#define LAYOUT_VEC_DEF(name, type)                                             \
     namespace name##_vec {                                                     \
-        const size_t size = sizeof(std::vector<typ>);                          \
-        const size_t align = alignof(std::vector<typ>);                        \
+        const size_t size = sizeof(std::vector<type>);                         \
+        const size_t align = alignof(std::vector<type>);                       \
     }
 
 LAYOUT_VEC_DEF(char, char);

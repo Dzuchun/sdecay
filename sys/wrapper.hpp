@@ -18,8 +18,8 @@ void std_string_bytes(const std::string *self, const char **ptr, size_t *len);
 
 void std_string_destruct(std::string *self);
 
-#define STD_VEC_OPS(name, typ)                                                 \
-    typedef std::vector<typ> name##_vec;                                       \
+#define STD_VEC_OPS(name, type)                                                \
+    typedef std::vector<type> name##_vec;                                      \
     struct _dummy_##name##_vec {                                               \
         name##_vec inner;                                                      \
     };                                                                         \
@@ -28,17 +28,17 @@ void std_string_destruct(std::string *self);
                                                                                \
     void std_vector_##name##_reserve(name##_vec *self, size_t capacity);       \
                                                                                \
-    void std_vector_##name##_push(name##_vec *self, typ *item);                \
+    void std_vector_##name##_push(name##_vec *self, type *item);               \
                                                                                \
-    void std_vector_##name##_from_data(typ const *data, size_t len,            \
+    void std_vector_##name##_from_data(type const *data, size_t len,           \
                                        name##_vec *out);                       \
     size_t std_vector_##name##_size(const name##_vec *self);                   \
                                                                                \
     bool std_vector_##name##_empty(name##_vec const *self);                    \
                                                                                \
-    typ const *std_vector_##name##_ptr(const name##_vec *self);                \
+    type const *std_vector_##name##_ptr(const name##_vec *self);               \
                                                                                \
-    typ *std_vector_##name##_ptr_mut(name##_vec *self);                        \
+    type *std_vector_##name##_ptr_mut(name##_vec *self);                       \
                                                                                \
     void std_vector_##name##_destruct(name##_vec *self);
 
@@ -87,7 +87,7 @@ typedef struct {
 #define OUT_CALL(name, recvt, rt, ...)                                         \
     void name(rt *out, recvt self, ##__VA_ARGS__);
 
-#define MOVE(name, typ) void move_##name(typ *dst, typ *src);
+#define MOVE(name, type) void move_##name(type *dst, type *src);
 
 MOVE(database, SandiaDecay::SandiaDecayDataBase);
 MOVE(mixture, SandiaDecay::NuclideMixture);
@@ -105,8 +105,8 @@ MOVE(element, SandiaDecay::Element);
 MOVE(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 MOVE(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
-#define MOVE_VEC(name, typ)                                                    \
-    void move_##name##_vec(std::vector<typ> *dst, std::vector<typ> *src);
+#define MOVE_VEC(name, type)                                                   \
+    void move_##name##_vec(std::vector<type> *dst, std::vector<type> *src);
 
 MOVE_VEC(char, char);
 MOVE_VEC(transition, SandiaDecay::Transition);
@@ -324,7 +324,7 @@ OUT_CALL(human_str_summary, const SandiaDecay::RadParticle *, std::string);
 
 namespace layout {
 
-#define LAYOUT(name, typ)                                                      \
+#define LAYOUT(name, type)                                                     \
     namespace name {                                                           \
     extern const size_t size;                                                  \
     extern const size_t align;                                                 \
@@ -347,7 +347,7 @@ LAYOUT(element, SandiaDecay::Element);
 LAYOUT(time_evolution_term, SandiaDecay::TimeEvolutionTerm);
 LAYOUT(nuclide_time_evolution, SandiaDecay::NuclideTimeEvolution);
 
-#define LAYOUT_VEC(name, typ)                                                  \
+#define LAYOUT_VEC(name, type)                                                 \
     namespace name##_vec {                                                     \
         extern const size_t size;                                              \
         extern const size_t align;                                             \
