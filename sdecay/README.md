@@ -408,3 +408,4 @@ N(Mg24, t) = 3.539e4 * exp(+3.418e-3 * t) + 3.539e4 * exp(+3.418e-3 * t) + -1.08
 ```
 
 [SandiaDecay]: <https://github.com/sandialabs/SandiaDecay>
+[docs]: <https://docs.rs/crate/sdecay/latest>

@@ -1,9 +1,39 @@
 [package]
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
 name = "sdecay"
 version = "0.1.0"
-edition = "2024"
+description = "Bindings for SandiaDecay C++ library, used to compute nuclide mixtures"
+readme = "README.md"
+keywords = [
+    "physics",
+    "atom",
+    "isotope",
+    "nuclear-physics", 
+]
+categories = []
+include = [
+    # licenses
+    "COPYING",
+    "COPYING.LESSER",
+    # docs
+    "README.md",
+    "BUILDING.md",
+    "FEATURES.md",
+    "SAFETY.md",
+    "katex.html",
+    "doc-theme.css",
+    # Rust sources
+    "src",
+]
 
 [package.metadata.docs.rs]
+rustdoc-args = [
+    "--html-in-header", "katex.html",
+    "--extend-css", "doc-theme.css"
+]
 all-features = true
 
 [package.metadata.cargo-all-features]

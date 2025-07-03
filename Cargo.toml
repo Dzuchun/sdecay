@@ -32,6 +32,10 @@ version = "0.1.6"
 path = "sdecay/nolt"
 version = "0.1.0"
 
+[workspace.dependencies.sdecay]
+path = "sdecay"
+version = "0.1.0"
+
 [workspace.lints.rust]
 rust_2018_idioms = { level = "deny", priority = -1 }
 missing_debug_implementations = "deny"
